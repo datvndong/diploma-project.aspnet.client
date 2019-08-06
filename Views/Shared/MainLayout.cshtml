@@ -1,0 +1,39 @@
+﻿@using CentralizedDataSystem.Resources;
+@{
+    bool isAdmin = false;
+    if (Session[Keywords.IS_ADMIN] != null) {
+        isAdmin = (bool)Session[Keywords.IS_ADMIN];
+    }
+
+    string navbar = isAdmin ? "AdminNavBarLayout" : "UserNavBarLayout";
+    string sidebar = isAdmin ? "AdminSideBarLayout" : "UserSideBarLayout";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/bundles/css/common")
+    <script src="~/Scripts/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container-scroller">
+        @Html.Partial("~/Views/Shared/" + navbar + ".cshtml")
+        <div class="container-fluid page-body-wrapper">
+            @Html.Partial("~/Views/Shared/" + sidebar + ".cshtml")
+            @RenderBody()
+        </div>
+    </div>
+    <footer class="footer">
+        <div class="container-fluid clearfix">
+            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">
+                &copy; Meitneri
+                <i class="mdi mdi-heart text-danger"></i>
+            </span>
+        </div>
+    </footer>
+    @Scripts.Render("~/bundles/js/common")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

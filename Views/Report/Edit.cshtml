@@ -1,0 +1,59 @@
+﻿@using CentralizedDataSystem.Models;
+@using CentralizedDataSystem.Resources;
+@{
+    string title = ViewBag.Title;
+
+    bool isAdmin = false;
+    if (Session[Keywords.IS_ADMIN] != null) {
+        isAdmin = (bool)Session[Keywords.IS_ADMIN];
+    }
+
+    User user = null;
+    if (Session[Keywords.USER] != null) {
+        user = (User)Session[Keywords.USER];
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@title</title>
+
+    @Styles.Render("~/bundles/css/report")
+    @Scripts.Render("~/bundles/js/builder")
+
+    <script>
+        window.onload = function () {
+            Formio.createForm(document.getElementById('formio'), "@ViewBag.Link").then(function (form) {
+                form.submission = {
+                    _id: "@ViewBag.Id",
+                    data: JSON.parse("@ViewBag.Data".replace(/&quot;/g, '"'))
+                };
+            });
+            Formio.setToken("@user.Token");
+        };
+    </script>
+</head>
+<body class="login-page sidebar-collapse">
+    <div class="page-header header-filter" style="background-image: url('/images/background/bg7.jpg'); background-size: cover; background-position: top center;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-md-6 ml-auto mr-auto">
+                    <div class="card card-login">
+                        <div class="card-header card-header-primary text-center">
+                            <h4 class="card-title">@title</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="formio"></div>
+                        </div>
+                        @if (isAdmin) {
+                            <a style="display: inline-block" href="@Url.Action(Keywords.INDEX, Keywords.FORM, new { page = 1 })" type="button" class="btn btn-dark btn-md">Back home</a>
+                        } else {
+                            <a style="display: inline-block" href="@Url.Action(Keywords.INDEX, Keywords.REPORT, new { page = 1 })" type="button" class="btn btn-dark btn-md">Back home</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,204 @@
+﻿@using CentralizedDataSystem.Models;
+@using CentralizedDataSystem.Resources;
+@{
+    Layout = "~/Views/Shared/MainLayout.cshtml";
+
+    List<User> users = new List<User>();
+    if (ViewBag.ListUsers != null) {
+        users = ViewBag.ListUsers;
+    }
+    int usersSize = users.Count;
+
+    List<Group> groups = new List<Group>();
+    if (ViewBag.ListGroups != null) {
+        groups = ViewBag.ListGroups;
+    }
+    int groupsSize = groups.Count;
+
+    int currPage = ViewBag.CurrPage;
+    int totalPages = ViewBag.TotalPages;
+
+    string idGroup = ViewBag.IdGroup;
+    string keyword = ViewBag.Keyword;
+}
+
+@Styles.Render("~/Content/pagination.css")
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="result-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
+                        @*<th:block th:if="${importMess}">
+                                <div th:if="${importStatus}" th:text="${importMess}" class="alert-success" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
+                                <div th:unless="${importStatus}" th:text="${importMess}" class="alert-danger" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
+                            </th:block>*@
+                        <h4 class="card-title">Users Table</h4>
+                        <form action="#" @*th:action="@{/users/read}" th:object="${importFile}"*@ enctype="multipart/form-data" method="post">
+                            <div class="input-group col-xs-12">
+                                <input type="file" class="form-control file-upload-info" th:field="*{fileDatas}" />
+                                <span class="input-group-append">
+                                    <button class="file-upload-browse btn btn-warning" type="submit">
+                                        <i class="mdi mdi-upload"></i>Import
+                                    </button>
+                                </span>
+                            </div>
+                        </form>
+                        <p class="card-description"></p>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <a class="btn btn-info btn-block" href="@Url.Action(Keywords.CREATE, Keywords.USER)">
+                                    New User
+                                    <i class="mdi mdi-plus"></i>
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <div class="col-sm-8">
+                                        <select class="form-control" id="details">
+                                            @foreach (Group item in groups) {
+                                                <option value="@item.IdGroup">@item.Name</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-dark" id="previousBtn" type="button"><span class="mdi mdi-arrow-left-bold" title="Previous"></span></button>
+                                    <button style="margin-left: 12.5px" class="btn btn-dark" id="nextBtn" type="button" title="Next"><span class="mdi mdi-arrow-right-bold"></span></button>
+                                    <button style="margin-left: 12.5px" class="btn btn-info" id="searchByGroup" type="button" title="Search"><span class="mdi mdi-account-search"></span></button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group col-xs-12">
+                                    <input id="searchText" type="text" class="form-control file-upload-info" placeholder="input your name keyword..." />
+                                    <span class="input-group-append">
+                                        <button class="file-upload-browse btn btn-info" type="button" id="searchByName">
+                                            <i class="mdi mdi-account-search"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="forms-table" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Email</th>
+                                        <th>Name</th>
+                                        <th>Group</th>
+                                        <th>Gender</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < usersSize; i++) {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@users[i].Email</td>
+                                            <td>@users[i].Name</td>
+                                            <td>@users[i].NameGroup</td>
+                                            <td>@users[i].Gender</td>
+                                            <td>@users[i].PhoneNumber</td>
+                                            <td>@users[i].Address</td>
+                                            <td>
+                                                <a th:id="edit-@i" href="@Url.Action(Keywords.EDIT, Keywords.USER, new { id = users[i].Id })" class="btn btn-primary" title="Edit">
+                                                    <span class="mdi mdi-tooltip-edit"></span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@Scripts.Render("~/Scripts/pagination.js")
+<script th:inline="javascript">
+    const serverURL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+  	const idGroup = "@idGroup";
+	createPagination(@totalPages, @currPage, `${serverURL}/User/Index/${idGroup}/`);
+
+  	if (idGroup === null) {
+  		// Modified pagination when show users after search by name
+  		const ul = $('#pagination > ul');
+  		const keyword = "@keyword";
+  		ul.each(function () {
+  			const aTag = $(this).find('a');
+  			let href = aTag.attr('href').replace("null", "root");
+  			aTag.attr('href', `${href}?keyword=${keyword}`);
+  		});
+  	}
+
+  	const nextBtn = $('#nextBtn');
+	const previousBtn = $('#previousBtn');
+	const details = $('#details');
+	const resultMess = $('#result-message');
+	const searchByGroupBtn = $('#searchByGroup');
+	const searchText = $('#searchText');
+	const searchByNameBtn = $('#searchByName');
+
+	nextBtn.click(function () {
+		callAjaxGroups(true);
+	});
+
+	previousBtn.click(function () {
+		callAjaxGroups(false);
+	});
+
+	searchByGroupBtn.click(function () {
+		let idGroupInSelect = details.val();
+		if (idGroupInSelect === 'D2500000') {
+			idGroupInSelect = 'root';
+		}
+        window.location.href = `${serverURL}/User/Index/${idGroupInSelect}/1`;
+	});
+
+	searchByNameBtn.click(function () {
+		const keyword = searchText.val();
+        window.location.href = `${serverURL}/User/Index/root/1?keyword=${keyword}`;
+	});
+
+    function callAjaxGroups(isNextStr) {
+		resultMess.hide();
+		resultMess.removeClass();
+		$.ajax({
+            url: `${serverURL}/Group/AjaxQuery`,
+			method: 'GET',
+			dataType: 'json',
+			data: {
+				idGroup: details.val(),
+                isNextStr
+			},
+            success: response => {
+                if (response.success) {
+                    const resArr = JSON.parse(response.responseText);
+
+                    if (resArr.length != 0) {
+                        details.children().remove();
+                        let data = null;
+                        resArr.forEach(function (item) {
+                            data = item.data;
+                            details.append(new Option(data.name, data.idGroup));
+                        });
+                    }
+                    builder.form.assign = details.val();
+                } else {
+                    resultMess.addClass('alert-danger');
+                    resultMess.html(response.responseText);
+                }
+            },
+            error: response => {
+                resultMess.addClass('alert-danger');
+                resultMess.html('Could not connect to API server()');
+                resultMess.show();
+            }
+		});
+	}
+</script>

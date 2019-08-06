@@ -1,0 +1,387 @@
+﻿@using CentralizedDataSystem.Models;
+@using CentralizedDataSystem.Resources;
+@{
+    List<Group> groups = new List<Group>();
+    if (ViewBag.ListGroups != null) {
+        groups = ViewBag.ListGroups;
+    }
+
+    List<Role> roles = new List<Role>();
+    if (ViewBag.ListRoles != null) {
+        roles = ViewBag.ListRoles;
+    }
+
+    string obj = ViewBag.Obj;
+
+    User user = null;
+    if (Session[Keywords.USER] != null) {
+        user = (User)Session[Keywords.USER];
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    @Styles.Render("~/bundles/css/builder")
+    @Scripts.Render("~/bundles/js/builder")
+</head>
+<body>
+    <div id="result-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
+
+    <form>
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" placeholder="Enter the form title" required="required" />
+        </div>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter the form machine name" required="required" />
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group row">
+                    <label class="col-sm-1 col-form-label">Path</label>
+                    <div class="col-sm-11">
+                        <input type="text" class="form-control" id="path" placeholder="example" style="text-transform: lowercase" required="required" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group row">
+                    <label class="col-sm-1 col-form-label">Tags</label>
+                    <div class="col-sm-11">
+                        <input type="text" class="form-control" id="path" placeholder="Add a tag" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Start date</label>
+                    <div class="col-sm-8">
+                        <input type="date" class="form-control" id="start-date" required="required" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Start time</label>
+                    <div class="col-sm-8">
+                        <input type="time" class="form-control" id="start-time" required="required" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Expired date</label>
+                    <div class="col-sm-8">
+                        <input type="date" class="form-control" id="expired-date" required="required" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Expired time</label>
+                    <div class="col-sm-8">
+                        <input type="time" class="form-control" id="expired-time" required="required" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group row">
+                    <label class="col-sm-3 col-form-label">Assign</label>
+                    <div class="col-sm-9">
+                        <select class="form-control" id="assign">
+                            @foreach (Role item in roles) {
+                                <option value="@item.Id">@item.Title</option>
+                            }
+                            <option selected="selected">Group</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="form-group row">
+                    <label class="col-sm-1 col-form-label">Details</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="details">
+                            @foreach (Group item in groups) {
+                                <option value="@item.IdGroup">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn btn-dark" id="previousBtn" type="button"><span class="fa fa-caret-square-o-left"></span></button>
+                    <button class="btn btn-dark" id="nextBtn" type="button"><span class="fa fa-caret-square-o-right"></span></button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div id="builder"></div>
+    <button type="button" class="btn btn-info mr-2" id="save" disabled="disabled">Save</button>
+    <a type="button" class="btn btn-warning" target="_parent" id="cancel" href="@Url.Action(Keywords.INDEX, Keywords.DASHBOARD)">Cancel</a>
+
+    <script>
+        const serverURL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+        const obj = JSON.parse("@obj".replace(/&quot;/g, '"'));
+        const isCreate = @Json.Encode(ViewBag.IsCreate);
+
+        const form = document.querySelector('form');
+        const title = $('#title');
+        const name = $('#name');
+        const path = $('#path');
+        const startDate = $('#start-date');
+        const startTime = $('#start-time');
+        const expiredDate = $('#expired-date');
+        const expiredTime = $('#expired-time');
+        const assign = $('#assign');
+        const details = $('#details');
+        const saveBtn = $('#save');
+        const cancelBtn = $('#cancel');
+        const resultMess = $('#result-message');
+        const nextBtn = $('#nextBtn');
+        const previousBtn = $('#previousBtn');
+
+        const defaultAssignValue = "@Keywords.AUTHENTICATED";
+
+        let builder = new Formio.FormBuilder(document.getElementById('builder'), {
+            display: 'form',
+            type: 'form',
+            tags: obj.tags,
+            owner: "@user.Email",
+            title: obj.title,
+            path: obj.path,
+            name: obj.name,
+            components: obj.components,
+            assign: details.val(),
+            startDate: obj.startDate,
+            startTime: obj.startTime,
+            expiredDate: obj.expiredDate,
+            expiredTime: obj.expiredTime,
+            submissionAccess: [
+                {
+                    roles: [],
+                    type: 'create_all'
+                },
+                {
+                    roles: [],
+                    type: 'read_all'
+                },
+                {
+                    roles: [],
+                    type: 'update_all'
+                },
+                {
+                    roles: [],
+                    type: 'delete_all'
+                },
+                {
+                    roles: [
+                        defaultAssignValue
+                    ],
+                    type: 'create_own'
+                },
+                {
+                    roles: [
+                        defaultAssignValue
+                    ],
+                    type: 'read_own'
+                },
+                {
+                    roles: [
+                        defaultAssignValue
+                    ],
+                    type: 'update_own'
+                },
+                {
+                    roles: [
+                        defaultAssignValue
+                    ],
+                    type: 'delete_own'
+                }
+            ]
+        });
+
+        if (!isCreate) {
+            saveBtn.removeAttr('disabled');
+        }
+
+        const setDisplay = function (display) {
+            builder.setDisplay(display).then(function (instance) {
+                instance.on('change', function (form) {
+                    if (form.components) {
+                        form.components.length !== 0 ? saveBtn.removeAttr('disabled') : saveBtn.attr('disabled', 'disabled');
+                    }
+                });
+            });
+        };
+
+        setDisplay('form');
+
+        // Set default value
+        title.val(obj.title);
+        name.val(obj.name);
+        path.val(obj.path);
+        // handle this error, tags
+        // tags.val(obj.tags);
+        startDate.val(obj.startDate);
+        startTime.val(obj.startTime);
+        expiredDate.val(obj.expiredDate);
+        expiredTime.val(obj.expiredTime);
+        if (typeof obj.assign !== "undefined") {
+            if (obj.isAssignToGroup === false) {
+                details.attr('disabled', 'disabled');
+                nextBtn.attr('disabled', 'disabled');
+                previousBtn.attr('disabled', 'disabled');
+                assign.val(obj.assign);
+            } else {
+                details.val(obj.assign);
+            }
+        }
+
+        title.keyup(function () {
+            const titleValue = title.val();
+            builder.form.title = titleValue
+
+            const nameValue = titleValue.toLowerCase().split(' ')
+                .map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join('')
+                .replace(/[^a-zA-Z0-9]/g, "");
+
+            builder.form.name = nameValue;
+            name.val(nameValue);
+        });
+
+        name.change(function () {
+            builder.form.name = name.val();
+        });
+
+        path.change(function () {
+            builder.form.path = path.val();
+        });
+
+        startDate.change(function () {
+            builder.form.startDate = startDate.val();
+        });
+
+        startTime.change(function () {
+            builder.form.startTime = startTime.val() + ":00";
+        });
+
+        expiredDate.change(function () {
+            builder.form.expiredDate = expiredDate.val();
+        });
+
+        expiredTime.change(function () {
+            builder.form.expiredTime = expiredTime.val() + ":00";
+        });
+
+        assign.change(function () {
+            const value = assign.val();
+            if (value == 'Group') {
+                details.removeAttr('disabled');
+                nextBtn.removeAttr('disabled');
+                previousBtn.removeAttr('disabled');
+                for (i = 4; i < 8; i++) {
+                    builder.form.submissionAccess[i].roles[0] = defaultAssignValue;
+                }
+                builder.form.assign = details.val();
+            } else {
+                details.attr('disabled', 'disabled');
+                nextBtn.attr('disabled', 'disabled');
+                previousBtn.attr('disabled', 'disabled');
+                builder.form.assign = value;
+                for (i = 4; i < 8; i++) {
+                    builder.form.submissionAccess[i].roles[0] = value;
+                }
+            }
+        });
+
+        details.change(function () {
+            builder.form.assign = details.val();
+        });
+
+        saveBtn.click(function () {
+            if (form.checkValidity()) {
+                saveBtn.attr('disabled', 'disabled');
+                cancelBtn.attr('disabled', 'disabled');
+                resultMess.hide();
+                resultMess.removeClass();
+
+                $.ajax({
+                    url: `${serverURL}/Form/Modified`,
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {
+                        formJSON: JSON.stringify(builder.form),
+                        oldPath: obj.oldPath
+                    },
+                    success: response => {
+                        if (response.success) {
+                            resultMess.addClass('alert-success');
+                            resultMess.html('Successfully ' + (isCreate ? 'created' : 'modified') + ' form!');
+                        } else {
+                            resultMess.addClass('alert-danger');
+                            resultMess.html(response.responseText);
+                        }
+                    },
+                    error: response => {
+                        resultMess.addClass('alert-danger');
+                        resultMess.html('Could not connect to API server.');
+                    }
+                });
+                resultMess.show();
+            } else {
+                form.reportValidity();
+            }
+        });
+
+        nextBtn.click(function () {
+            callAjaxGroups(true);
+        });
+
+        previousBtn.click(function () {
+            callAjaxGroups(false);
+        });
+
+        function callAjaxGroups(isNextStr) {
+            resultMess.hide();
+            resultMess.removeClass();
+            $.ajax({
+                url: `${serverURL}/Group/AjaxQuery`,
+                method: 'GET',
+                dataType: 'json',
+                data: {
+                    idGroup: details.val(),
+                    isNextStr
+                },
+                success: response => {
+                    if (response.success) {
+                        const resArr = JSON.parse(response.responseText);
+
+                        if (resArr.length != 0) {
+                            details.children().remove();
+                            let data = null;
+                            resArr.forEach(function (item) {
+                                data = item.data;
+                                details.append(new Option(data.name, data.idGroup));
+                            });
+                        }
+                        builder.form.assign = details.val();
+                    } else {
+                        resultMess.addClass('alert-danger');
+                        resultMess.html(response.responseText);
+                    }
+                },
+                error: response => {
+                    resultMess.addClass('alert-danger');
+                    resultMess.html('Could not connect to API server()');
+                    resultMess.show();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

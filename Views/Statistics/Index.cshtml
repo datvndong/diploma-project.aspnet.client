@@ -1,0 +1,99 @@
+﻿@using CentralizedDataSystem.Models;
+@{
+    Layout = "~/Views/Shared/MainLayout.cshtml";
+
+    List<Form> forms = new List<Form>();
+    if (ViewBag.List != null) {
+        forms = ViewBag.List;
+    }
+    int formsSize = forms.Count;
+}
+
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <div id="result-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
+                        <div class="form-group">
+                            <label for="chooseForm">Choose Form</label>
+                            <select class="form-control" id="chooseForm">
+                                <option value="">-----Pick One Form-----</option>
+                                @for (int i = 0; i < formsSize; i++) {
+                                    <option value="@forms[i].Path">@forms[i].Title</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" id="chart-container"></div>
+    </div>
+</div>
+<script src="~/Scripts/chart.js"></script>
+<script th:inline="javascript">
+    const serverURL = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+    const chooseFormSelectBox = $('#chooseForm');
+    const resultMess = $('#result-message');
+    const container = $('#chart-container');
+
+    chooseFormSelectBox.change(function () {
+        container.empty();
+        const path = chooseFormSelectBox.val();
+        if (path !== "") {
+            resultMess.removeClass();
+            $.ajax({
+                url: `${serverURL}/Statistics/Analysis/${path}`,
+                method: 'GET',
+                dataType: 'json',
+                data: {
+                    path
+                },
+                success: response => {
+                    if (response.success) {
+                        resultMess.addClass('alert-success');
+                        resultMess.html("Successfuly statistics!");
+
+                        const data = JSON.parse(response.responseText.replace(/&quot;/g, '"'));
+
+                        // Process chart
+                        const checkbox = data.checkbox;
+                        const selectboxes = data.selectboxes;
+                        const select = data.select;
+                        const radio = data.radio;
+                        const amount = data.amount;
+
+                        if (typeof checkbox !== 'undefined') {
+                            createChart(container, checkbox, true);
+                        }
+                        if (typeof selectboxes !== 'undefined') {
+                            selectboxes.forEach(element => {
+                                createChart(container, element, true);
+                            });
+                        }
+                        if (typeof select !== 'undefined') {
+                            select.forEach(element => {
+                                createChart(container, element, false);
+                            });
+                        }
+                        if (typeof radio !== 'undefined') {
+                            radio.forEach(element => {
+                                createChart(container, element, false);
+                            });
+                        }
+                    }
+                },
+                error: () => {
+                    resultMess.addClass('alert-danger');
+                    resultMess.html('Could not connect to API server()');
+                }
+            });
+            resultMess.show();
+        } else {
+            resultMess.hide();
+        }
+    });
+</script>
+

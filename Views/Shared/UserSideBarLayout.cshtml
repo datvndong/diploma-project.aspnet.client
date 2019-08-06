@@ -1,0 +1,38 @@
+﻿@using CentralizedDataSystem.Models;
+@using CentralizedDataSystem.Resources;
+@{
+    User user = (User)Session[Keywords.USER];
+}
+
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+    <ul class="nav">
+        <li class="nav-item nav-profile">
+            <div class="nav-link">
+                <div class="user-wrapper">
+                    <div class="profile-image">
+                        <img src="/images/faces/face2.jpg" alt="profile image" />
+                    </div>
+                    <div class="text-wrapper">
+                        <p class="profile-name">@user.Name</p>
+                        <div>
+                            <small class="designation text-muted">User</small>
+                            <span class="status-indicator online"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action(Keywords.PROFILE, Keywords.USER)">
+                <i class="menu-icon mdi mdi-account"></i>
+                <span class="menu-title">Profile</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="@Url.Action(Keywords.INDEX, Keywords.REPORT, new { page = 1})">
+                <i class="menu-icon mdi mdi-leaf"></i>
+                <span class="menu-title">Reports management</span>
+            </a>
+        </li>
+    </ul>
+</nav>

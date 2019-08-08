@@ -244,6 +244,7 @@
     <Compile Include="Services\Interfaces\IWeatherService.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Utils\CalculateUtil.cs" />
+    <Compile Include="Utils\ConfigUtil.cs" />
     <Compile Include="Utils\EncDecUtil.cs" />
     <Compile Include="Utils\Implements\HttpUtil.cs" />
     <Compile Include="Utils\Interfaces\IHttpUtil.cs" />
@@ -3458,6 +3459,7 @@
     <Content Include="vendors\tinymce\tinymce.jquery.min.js" />
     <Content Include="vendors\tinymce\tinymce.js" />
     <Content Include="vendors\tinymce\tinymce.min.js" />
+    <Content Include="Views\Template\Mail.html" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

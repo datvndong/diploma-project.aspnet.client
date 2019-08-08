@@ -19,17 +19,18 @@ namespace CentralizedDataSystem {
             // e.g. container.RegisterType<ITestService, TestService>();
 
             // Service
+            container.RegisterType<IBaseService, BaseService>();
+            container.RegisterType<IDashboardService, DashboardService>();
             container.RegisterType<IFormControlService, FormControlService>();
             container.RegisterType<IFormService, FormService>();
             container.RegisterType<IGroupService, GroupService>();
             container.RegisterType<ILoginService, LoginService>();
             container.RegisterType<IRoleService, RoleService>();
+            container.RegisterType<ISendEmailService, SendEmailService>();
+            container.RegisterType<IStatisticsService, StatisticsService>();
             container.RegisterType<ISubmissionService, SubmissionService>();
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IWeatherService, WeatherService>();
-            container.RegisterType<IDashboardService, DashboardService>();
-            container.RegisterType<IStatisticsService, StatisticsService>();
-            container.RegisterType<ISendEmailService, SendEmailService>();
 
             // Repository
             container.RegisterType<IMongoRepository, MongoRepository>();

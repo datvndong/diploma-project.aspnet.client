@@ -12,18 +12,18 @@ namespace CentralizedDataSystem.Controllers {
     public class LoginController : BaseController {
         private readonly ILoginService _loginService;
 
-        public LoginController(ILoginService loginService) {
+        public LoginController(IBaseService baseService, ILoginService loginService) : base(baseService) {
             _loginService = loginService;
         }
 
         [HttpGet]
-        public ActionResult Index() {
-            // This controller can used by Admin and User -> so can't authen by normal way in BaseController
-            User user = GetUser();
-
-            if (user == null) {
+        public async Task<ActionResult> Index() {
+            string loginAuthenResult = await LoginAuthentication();
+            if (!string.Empty.Equals(loginAuthenResult)) {
                 return View();
             }
+
+            User user = GetUser();
 
             if (user.IsAdmin) {
                 return RedirectToAction(Keywords.INDEX, Keywords.DASHBOARD);

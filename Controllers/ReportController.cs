@@ -15,7 +15,7 @@ namespace CentralizedDataSystem.Controllers {
         private readonly ISubmissionService _submissionService;
         private readonly IGroupService _groupService;
 
-        public ReportController(IFormService formService, IFormControlService formControlService, ISubmissionService submissionService, IGroupService groupService) {
+        public ReportController(IBaseService baseService, IFormService formService, IFormControlService formControlService, ISubmissionService submissionService, IGroupService groupService) : base(baseService) {
             _formService = formService;
             _formControlService = formControlService;
             _submissionService = submissionService;
@@ -82,7 +82,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Index(int page) {
-            string userAuthenResult = UserAuthentication();
+            string userAuthenResult = await UserAuthentication();
             if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
@@ -131,7 +131,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Auth(string path) {
-            string userAuthenResult = UserAuthentication();
+            string userAuthenResult = await UserAuthentication();
             if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
@@ -190,7 +190,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Edit(string path) {
-            string userAuthenResult = UserAuthentication();
+            string userAuthenResult = await UserAuthentication();
             if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }

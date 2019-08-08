@@ -220,12 +220,14 @@
     <Compile Include="Resources\Keywords.cs" />
     <Compile Include="Resources\Messages.cs" />
     <Compile Include="Resources\ViewName.cs" />
+    <Compile Include="Services\Implements\BaseService.cs" />
     <Compile Include="Services\Implements\DashboardService.cs" />
     <Compile Include="Services\Implements\FormControlService.cs" />
     <Compile Include="Services\Implements\FormService.cs" />
     <Compile Include="Services\Implements\GroupService.cs" />
     <Compile Include="Services\Implements\SendEmailService.cs" />
     <Compile Include="Services\Implements\StatisticsService.cs" />
+    <Compile Include="Services\Interfaces\IBaseService.cs" />
     <Compile Include="Services\Interfaces\IDashboardService.cs" />
     <Compile Include="Services\Interfaces\IFormControlService.cs" />
     <Compile Include="Services\Interfaces\IFormService.cs" />

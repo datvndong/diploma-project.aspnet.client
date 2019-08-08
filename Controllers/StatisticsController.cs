@@ -10,13 +10,13 @@ namespace CentralizedDataSystem.Controllers {
     public class StatisticsController : BaseController {
         private readonly IStatisticsService _statisticsService;
 
-        public StatisticsController(IStatisticsService statisticsService) {
+        public StatisticsController(IBaseService baseService, IStatisticsService statisticsService) : base(baseService) {
             _statisticsService = statisticsService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index() {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -36,7 +36,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Analysis(string path) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }

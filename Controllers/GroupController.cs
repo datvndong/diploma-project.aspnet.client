@@ -13,13 +13,13 @@ namespace CentralizedDataSystem.Controllers {
         private readonly IGroupService _groupService;
         //private readonly IReadSurveyService _readSurveyService;
 
-        public GroupController(IGroupService groupService) {
+        public GroupController(IBaseService baseService, IGroupService groupService) : base(baseService) {
             _groupService = groupService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(string idParent, int page) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -46,8 +46,8 @@ namespace CentralizedDataSystem.Controllers {
         }
 
         [HttpGet]
-        public ActionResult Create() {
-            string adminAuthenResult = AdminAuthentication();
+        public async Task<ActionResult> Create() {
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -61,7 +61,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Edit(string id) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -88,7 +88,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> AjaxQuery(string idGroup, string isNextStr) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }

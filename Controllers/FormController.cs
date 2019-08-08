@@ -15,7 +15,7 @@ namespace CentralizedDataSystem.Controllers {
         private readonly IRoleService _roleService;
         private readonly IGroupService _groupService;
 
-        public FormController(IFormService formService, IFormControlService formControlService, IRoleService roleService, IGroupService groupService) {
+        public FormController(IBaseService baseService, IFormService formService, IFormControlService formControlService, IRoleService roleService, IGroupService groupService) : base(baseService) {
             _formService = formService;
             _formControlService = formControlService;
             _roleService = roleService;
@@ -24,7 +24,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Index(int page) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -49,8 +49,8 @@ namespace CentralizedDataSystem.Controllers {
         }
 
         [HttpGet]
-        public ActionResult Create() {
-            string adminAuthenResult = AdminAuthentication();
+        public async Task<ActionResult> Create() {
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -63,8 +63,8 @@ namespace CentralizedDataSystem.Controllers {
         }
 
         [HttpGet]
-        public ActionResult Edit(string path) {
-            string adminAuthenResult = AdminAuthentication();
+        public async Task<ActionResult> Edit(string path) {
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -78,7 +78,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Builder(string path) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -156,7 +156,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpPost]
         public async Task<ActionResult> Modified(string formJSON, string oldPath) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -222,7 +222,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Delete(string path) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }

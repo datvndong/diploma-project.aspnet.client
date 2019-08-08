@@ -5,6 +5,7 @@
         public static readonly string LOGOUT_URL = SERVER_URL + "/logout";
         public static readonly string FORM_URL = SERVER_URL + "/form";
         public static readonly string ROLE_URL = SERVER_URL + "/role";
+        public static readonly string CURRENT_USER = SERVER_URL + "/current";
 
         public static string GetListSubmissionsURL(string path) {
             return SERVER_URL + "/" + path + "/submission";

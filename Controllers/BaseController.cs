@@ -1,21 +1,27 @@
 ﻿using CentralizedDataSystem.Models;
 using CentralizedDataSystem.Resources;
+using CentralizedDataSystem.Services.Interfaces;
 using CentralizedDataSystem.Utils;
+using CentralizedDataSystem.Utils.Interfaces;
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class BaseController : Controller {
-        private string LoginAuthentication() {
-            HttpCookie cookie = Request.Cookies[Keywords.USER];
+        private readonly IBaseService _baseService;
 
-            if (cookie != null) {
-                return string.Empty;
-            }
+        public BaseController(IBaseService baseService) {
+            _baseService = baseService;
+        }
 
-            TempData[Keywords.ERROR] = Messages.LOGIN_TO_CONTINUE;
-            return ViewName.LOGIN;
+        protected User GetUser() {
+            string infoStr = EncDecUtil.Decrypt(Request.Cookies[Keywords.USER].Value, Configs.CRYPTO_PASSWORD);
+            User user = SerializeUtil.DeSerializeAnObject(infoStr, typeof(User)) as User;
+
+            return user;
         }
 
         protected void SetUserInfoToCooke(User user) {
@@ -32,8 +38,24 @@ namespace CentralizedDataSystem.Controllers {
             Response.Cookies.Add(cookie);
         }
 
-        protected string AdminAuthentication() {
-            string loginAuthenResult = LoginAuthentication();
+        protected async Task<string> LoginAuthentication() {
+            HttpCookie cookie = Request.Cookies[Keywords.USER];
+            if (cookie != null) {
+                User user = GetUser();
+
+                bool isValidToken = await _baseService.IsValidToken(user.Token);
+                if (isValidToken) {
+                    return string.Empty;
+                }
+
+                TempData[Keywords.ERROR] = Messages.LOGIN_TO_CONTINUE;
+            }
+
+            return ViewName.LOGIN;
+        }
+
+        protected async Task<string> AdminAuthentication() {
+            string loginAuthenResult = await LoginAuthentication();
             if (!string.Empty.Equals(loginAuthenResult)) {
                 return loginAuthenResult;
             }
@@ -46,8 +68,8 @@ namespace CentralizedDataSystem.Controllers {
             return ViewName.ERROR_403;
         }
 
-        protected string UserAuthentication() {
-            string loginAuthenResult = LoginAuthentication();
+        protected async Task<string> UserAuthentication() {
+            string loginAuthenResult = await LoginAuthentication();
             if (!loginAuthenResult.Equals(string.Empty)) {
                 return loginAuthenResult;
             }
@@ -58,18 +80,6 @@ namespace CentralizedDataSystem.Controllers {
             }
 
             return ViewName.ERROR_403;
-        }
-
-        protected User GetUser() {
-            HttpCookie cookie = Request.Cookies[Keywords.USER];
-            if (cookie == null) {
-                return null;
-            }
-
-            string infoStr = EncDecUtil.Decrypt(cookie.Value, Configs.CRYPTO_PASSWORD);
-            User user = SerializeUtil.DeSerializeAnObject(infoStr, typeof(User)) as User;
-
-            return user;
         }
     }
 }

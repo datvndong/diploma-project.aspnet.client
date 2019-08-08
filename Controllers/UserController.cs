@@ -15,7 +15,7 @@ namespace CentralizedDataSystem.Controllers {
         private readonly IGroupService _groupService;
         //private readonly IReadSurveyService _readSurveyService;
 
-        public UserController(IUserService userService, ISubmissionService submissionService, IGroupService groupService) {
+        public UserController(IBaseService baseService, IUserService userService, ISubmissionService submissionService, IGroupService groupService) : base(baseService) {
             _userService = userService;
             _submissionService = submissionService;
             _groupService = groupService;
@@ -23,7 +23,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Index(string idGroup, int page, string keyword) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -110,8 +110,8 @@ namespace CentralizedDataSystem.Controllers {
         }
 
         [HttpGet]
-        public ActionResult Create() {
-            string adminAuthenResult = AdminAuthentication();
+        public async Task<ActionResult> Create() {
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -125,7 +125,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Edit(string id) {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
@@ -149,7 +149,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> ProfileInfo() {
-            string userAuthenResult = UserAuthentication();
+            string userAuthenResult = await UserAuthentication();
             if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
@@ -178,7 +178,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpPost]
         public async Task<ActionResult> UpdateProfile(FormCollection form) {
-            string userAuthenResult = UserAuthentication();
+            string userAuthenResult = await UserAuthentication();
             if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
@@ -187,12 +187,12 @@ namespace CentralizedDataSystem.Controllers {
 
             string name = form[Keywords.NAME];
             string email = form[Keywords.EMAIL];
-            string gender = form[Keywords.GENDER]; 
-            string address = form[Keywords.ADDRESS]; 
+            string gender = form[Keywords.GENDER];
+            string address = form[Keywords.ADDRESS];
             string phoneNumber = form[Keywords.PHONE];
             string token = form[Keywords.TOKEN];
-            string id = form[Keywords.ID]; 
-            string idGroup = form[Keywords.ID_GROUP]; 
+            string id = form[Keywords.ID];
+            string idGroup = form[Keywords.ID_GROUP];
 
             if (!id.Equals(user.Id) || !idGroup.Equals(user.IdGroup)) {
                 return Json(new { success = false, responseText = Messages.UNAUTHORIZED_MESSAGE }, JsonRequestBehavior.AllowGet);
@@ -200,7 +200,7 @@ namespace CentralizedDataSystem.Controllers {
             if (name == null || name.Equals(string.Empty)) {
                 return Json(new { success = false, responseText = Messages.FILL(Keywords.NAME) }, JsonRequestBehavior.AllowGet);
             }
-            if (email == null|| email.Equals(string.Empty)) {
+            if (email == null || email.Equals(string.Empty)) {
                 return Json(new { success = false, responseText = Messages.FILL(Keywords.EMAIL) }, JsonRequestBehavior.AllowGet);
             }
 

@@ -7,13 +7,13 @@ namespace CentralizedDataSystem.Controllers {
     public class DashboardController : BaseController {
         private readonly IDashboardService _dashboardService;
 
-        public DashboardController(IDashboardService dashboardService) {
+        public DashboardController(IBaseService baseService, IDashboardService dashboardService) : base(baseService) {
             _dashboardService = dashboardService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index() {
-            string adminAuthenResult = AdminAuthentication();
+            string adminAuthenResult = await AdminAuthentication();
             if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }

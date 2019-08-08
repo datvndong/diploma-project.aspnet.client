@@ -10,21 +10,20 @@ namespace CentralizedDataSystem.Controllers {
         private readonly IFormService _formService;
         private readonly ISubmissionService _submissionService;
 
-        public SubmissionController(IFormService formService, ISubmissionService submissionService) {
+        public SubmissionController(IBaseService baseService, IFormService formService, ISubmissionService submissionService) : base(baseService) {
             _formService = formService;
             _submissionService = submissionService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(string path, int page) {
-            // This controller can used by Admin and User -> so can't authen by normal way in BaseController
-            User user = GetUser();
-
-            if (user == null) {
+            string loginAuthenResult = await LoginAuthentication();
+            if (!string.Empty.Equals(loginAuthenResult)) {
                 TempData[Keywords.ERROR] = Messages.LOGIN_TO_CONTINUE;
                 return RedirectToAction(Keywords.INDEX, Keywords.LOGIN);
             }
 
+            User user = GetUser();
             string token = user.Token;
 
             long sizeListSubs = await _submissionService.CountSubmissions(token, path);

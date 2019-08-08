@@ -19,7 +19,7 @@
         public static readonly string LIMIT_QUERY = "1000000000";
 
         public static readonly int HTTP_LIFE_TIME = 5;
-        public static readonly int COOKIE_LIFE_TIME = 30;
+        public static readonly int COOKIE_LIFE_TIME = 2;
 
         public static readonly string CRYPTO_PASSWORD = "XtremeMemory";
 

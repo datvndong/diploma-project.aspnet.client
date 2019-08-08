@@ -2,7 +2,7 @@
     public class Messages {
         public static readonly string SERVER_ERROR = "Internal Server Error.";
         public static readonly string INVALID_ACCOUNT_ERROR = "Invalid username or password.";
-        public static readonly string LOGIN_TO_CONTINUE = "Please login to continue.";
+        public static readonly string LOGIN_TO_CONTINUE = "Sorry, your session has expired. Please login again.";
         public static readonly string DEACTIVE_USER = "Sorry, your account has been disabled. Please try another one.";
 
         public static readonly string DATABASE_ERROR = "Database error.";

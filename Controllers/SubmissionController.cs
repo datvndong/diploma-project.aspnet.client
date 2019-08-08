@@ -1,46 +1,44 @@
 ﻿using CentralizedDataSystem.Models;
 using CentralizedDataSystem.Resources;
-using CentralizedDataSystem.Services;
 using CentralizedDataSystem.Services.Interfaces;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class SubmissionController : BaseController {
-        private readonly IFormService formService;
-        private readonly ISubmissionService submissionService;
+        private readonly IFormService _formService;
+        private readonly ISubmissionService _submissionService;
 
         public SubmissionController(IFormService formService, ISubmissionService submissionService) {
-            this.formService = formService;
-            this.submissionService = submissionService;
+            _formService = formService;
+            _submissionService = submissionService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(string path, int page) {
-            User user = (User)Session[Keywords.USER];
+            // This controller can used by Admin and User -> so can't authen by normal way in BaseController
+            User user = GetUser();
 
             if (user == null) {
                 TempData[Keywords.ERROR] = Messages.LOGIN_TO_CONTINUE;
                 return RedirectToAction(Keywords.INDEX, Keywords.LOGIN);
             };
 
-            long sizeListSubs = await submissionService.CountSubmissions(path);
+            string token = user.Token;
+
+            long sizeListSubs = await _submissionService.CountSubmissions(token, path);
             int totalPages = (int)Math.Ceiling((float)sizeListSubs / Configs.NUMBER_ROWS_PER_PAGE);
 
-            string submissionRes = await submissionService.FindSubmissionsByPage(path, page);
-            string formRes = await formService.FindFormWithToken(path);
+            string submissionRes = await _submissionService.FindSubmissionsByPage(token, path, page);
+            string formRes = await _formService.FindFormWithToken(token, path);
 
             ViewBag.CurrPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.Path = path;
             ViewBag.SubmissionData = submissionRes;
             ViewBag.FormData = formRes;
+            ViewBag.User = user;
             ViewBag.Title = "Submissions";
 
             return View();

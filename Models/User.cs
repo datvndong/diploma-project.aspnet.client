@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Models {
+﻿namespace CentralizedDataSystem.Models {
     public class User {
         public string Email { get; set; }
         public string Name { get; set; }
@@ -18,9 +13,10 @@ namespace CentralizedDataSystem.Models {
         public string Id { get; set; }
         public int ReportsNumber { get; set; }
         public int SubmittedNumber { get; set; }
+        public bool IsAdmin { get; set; }
 
         public User(string email, string name, string token, string idGroup, string gender, string phoneNumber,
-            string address, string id) {
+            string address, string id, bool isAdmin) {
             this.Email = email;
             this.Name = name;
             this.Token = token;
@@ -29,6 +25,7 @@ namespace CentralizedDataSystem.Models {
             this.PhoneNumber = phoneNumber;
             this.Address = address;
             this.Id = id;
+            this.IsAdmin = isAdmin;
         }
 
         public User(string id, string email, string name, string nameGroup, string gender, string phoneNumber, string address) {
@@ -48,17 +45,17 @@ namespace CentralizedDataSystem.Models {
             this.IdGroup = idGroup;
         }
 
-        public User(string email, string name, string token) {
+        public User(string email, string name, string token, bool isAdmin) {
             this.Email = email;
             this.Name = name;
             this.Token = token;
+            this.IsAdmin = isAdmin;
         }
 
         public User(string email) {
             this.Email = email;
         }
 
-        public User() {
-        }
+        public User() { }
     }
 }

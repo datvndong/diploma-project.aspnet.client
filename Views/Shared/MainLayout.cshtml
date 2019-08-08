@@ -1,8 +1,12 @@
-﻿@using CentralizedDataSystem.Resources;
+﻿@using CentralizedDataSystem.Models;
+@using CentralizedDataSystem.Resources;
 @{
     bool isAdmin = false;
-    if (Session[Keywords.IS_ADMIN] != null) {
-        isAdmin = (bool)Session[Keywords.IS_ADMIN];
+
+    User user = new User();
+    if (ViewBag.User != null) {
+        user = ViewBag.User;
+        isAdmin = user.IsAdmin;
     }
 
     string navbar = isAdmin ? "AdminNavBarLayout" : "UserNavBarLayout";

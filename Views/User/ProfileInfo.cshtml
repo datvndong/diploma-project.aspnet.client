@@ -1,9 +1,9 @@
 ﻿@using CentralizedDataSystem.Models;
 @using CentralizedDataSystem.Resources;
 @{
-    User user = null;
-    if (Session[Keywords.USER] != null) {
-        user = (User)Session[Keywords.USER];
+    User user = new User();
+    if (ViewBag.User != null) {
+        user = ViewBag.User;
     }
 
     int reportsNumber = ViewBag.ReportsNumber;

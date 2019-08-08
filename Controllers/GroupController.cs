@@ -5,39 +5,41 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class GroupController : BaseController {
-        private readonly IGroupService groupService;
-        //private readonly IReadSurveyService readSurveyService;
+        private readonly IGroupService _groupService;
+        //private readonly IReadSurveyService _readSurveyService;
 
         public GroupController(IGroupService groupService) {
-            this.groupService = groupService;
+            _groupService = groupService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(string idParent, int page) {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            Group parentGroup = await groupService.FindGroupParent(idParent.Equals(Keywords.ROOT_GROUP) ? "data.idParent=root" : "data.idGroup=" + idParent);
+            User user = GetUser();
+            string token = user.Token;
 
-            int sizeListGroups = await groupService.FindNumberOfChildGroupByIdParent(parentGroup.IdGroup);
+            Group parentGroup = await _groupService.FindGroupParent(token, idParent.Equals(Keywords.ROOT_GROUP) ? "data.idParent=root" : "data.idGroup=" + idParent);
+
+            int sizeListGroups = await _groupService.FindNumberOfChildGroupByIdParent(token, parentGroup.IdGroup);
             int totalPages = (int)Math.Ceiling((float)sizeListGroups / Configs.NUMBER_ROWS_PER_PAGE);
 
-            List<Group> groups = await groupService.FindListChildGroupByIdParentWithPage(parentGroup.IdGroup, parentGroup.Name, page);
+            List<Group> groups = await _groupService.FindListChildGroupByIdParentWithPage(token, parentGroup.IdGroup, parentGroup.Name, page);
             parentGroup.NumberOfChildrenGroup = sizeListGroups;
 
             ViewBag.List = groups;
             ViewBag.CurrPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.Root = parentGroup;
+            ViewBag.User = user;
             ViewBag.Title = "Groups management";
 
             return View();
@@ -46,11 +48,12 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public ActionResult Create() {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
             ViewBag.Link = APIs.ModifiedForm(Keywords.GROUP);
+            ViewBag.User = GetUser();
             ViewBag.Title = "Create new Group";
 
             return View(ViewName.SEND_REPORT);
@@ -59,11 +62,14 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> Edit(string id) {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            string infoRes = await groupService.FindGroupDataById(id);
+            User user = GetUser();
+            string token = user.Token;
+
+            string infoRes = await _groupService.FindGroupDataById(token, id);
 
             JObject jObject = JObject.Parse(infoRes);
             JObject dataObject = (JObject)jObject.GetValue(Keywords.DATA);
@@ -74,6 +80,7 @@ namespace CentralizedDataSystem.Controllers {
             ViewBag.Link = APIs.ModifiedForm(Keywords.GROUP);
             ViewBag.Id = id;
             ViewBag.Data = JsonConvert.SerializeObject(dataObject);
+            ViewBag.User = user;
             ViewBag.Title = "Edit Group";
 
             return View(ViewName.EDIT_REPORT);
@@ -82,22 +89,25 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> AjaxQuery(string idGroup, string isNextStr) {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            bool isNext = Boolean.Parse(isNextStr);
+            User user = GetUser();
+            string token = user.Token;
+
+            bool isNext = bool.Parse(isNextStr);
             string groups = null;
 
             if (isNext) {
-                groups = await groupService.FindGroupsByIdParentWhenCallAjax(idGroup);
+                groups = await _groupService.FindGroupsByIdParentWhenCallAjax(token, idGroup);
             } else {
-                Group currentGroup = await groupService.FindGroupParent("data.idGroup=" + idGroup);
-                Group parentGroup = await groupService.FindGroupParent("data.idGroup=" + currentGroup.IdParent);
+                Group currentGroup = await _groupService.FindGroupParent(token, "data.idGroup=" + idGroup);
+                Group parentGroup = await _groupService.FindGroupParent(token, "data.idGroup=" + currentGroup.IdParent);
                 if (parentGroup == null) {
                     return Json(new { success = true, responseText = "[]" }, JsonRequestBehavior.AllowGet);
                 }
-                groups = await groupService.FindGroupsByIdParentWhenCallAjax(parentGroup.IdParent);
+                groups = await _groupService.FindGroupsByIdParentWhenCallAjax(token, parentGroup.IdParent);
             }
 
             if (groups == null) {

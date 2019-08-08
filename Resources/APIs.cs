@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Resources {
+﻿namespace CentralizedDataSystem.Resources {
     public class APIs {
         private static readonly string SERVER_URL = "http://localhost:3001";
         public static readonly string LOGIN_URL = SERVER_URL + "/user/login";

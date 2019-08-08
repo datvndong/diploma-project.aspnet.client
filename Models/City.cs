@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Models {
+﻿namespace CentralizedDataSystem.Models {
     public class City {
         public string Weekday { get; set; }
         public string Date { get; set; }
@@ -20,7 +15,6 @@ namespace CentralizedDataSystem.Models {
             this.Description = description;
         }
 
-        public City() {
-        }
+        public City() { }
     }
 }

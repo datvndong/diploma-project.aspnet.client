@@ -5,27 +5,22 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace CentralizedDataSystem.Services.Implements {
     public class DashboardService : IDashboardService {
-        private readonly IWeatherService weatherService;
-        private readonly IFormControlService formControlService;
-        private readonly ISubmissionService submissionService;
+        private readonly IWeatherService _weatherService;
+        private readonly IFormControlService _formControlService;
+        private readonly ISubmissionService _submissionService;
 
         public DashboardService(IWeatherService weatherService, IFormControlService formControlService, ISubmissionService submissionService) {
-            this.weatherService = weatherService;
-            this.formControlService = formControlService;
-            this.submissionService = submissionService;
+            _weatherService = weatherService;
+            _formControlService = formControlService;
+            _submissionService = submissionService;
         }
 
         public async Task<City> GetCityInfo() {
-            string owmAPIKey = "cf76b373a6c28e3253b49e1a8f04beb7";
-            string idCity = "1580541";
-
-            string weatherRes = await weatherService.GetWeather(owmAPIKey, idCity);
+            string weatherRes = await _weatherService.GetWeather(Configs.OWM_API_KEY, Configs.ID_CITY);
             JObject weatherObj = JObject.Parse(weatherRes);
             if (weatherObj.Count == 0) return null;
 
@@ -47,17 +42,17 @@ namespace CentralizedDataSystem.Services.Implements {
             return new City(weekday, date, name, country, temperatureFormat, descriptionFormat);
         }
 
-        public async Task<long> FindNumberGroups() {
-            return await submissionService.CountSubmissions(Keywords.GROUP);
+        public async Task<long> FindNumberGroups(string token) {
+            return await _submissionService.CountSubmissions(token, Keywords.GROUP);
         }
 
         public async Task<long> FindNumberForms(string email) {
-            List<FormControl> result = await formControlService.FindByOwner(email);
+            List<FormControl> result = await _formControlService.FindByOwner(email);
             return result.Count;
         }
 
-        public async Task<long> FindNumberUsers() {
-            return await submissionService.CountSubmissions(Keywords.USER.ToLower());
+        public async Task<long> FindNumberUsers(string token) {
+            return await _submissionService.CountSubmissions(token, Keywords.USER.ToLower());
         }
     }
 }

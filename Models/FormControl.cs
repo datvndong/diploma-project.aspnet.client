@@ -1,10 +1,4 @@
-﻿using MongoDB.Bson;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Models {
+﻿namespace CentralizedDataSystem.Models {
     public class FormControl {
         public string PathForm { get; set; }
         public string Owner { get; set; }
@@ -19,7 +13,6 @@ namespace CentralizedDataSystem.Models {
             this.Expired = expired;
         }
 
-        public FormControl() {
-        }
+        public FormControl() { }
     }
 }

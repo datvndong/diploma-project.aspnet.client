@@ -1,21 +1,22 @@
 ﻿using CentralizedDataSystem.Models;
 using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
+using CentralizedDataSystem.Utils.Interfaces;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace CentralizedDataSystem.Services.Implements {
     public class StatisticsService : IStatisticsService {
-        private readonly IFormService formService;
-        private readonly ISubmissionService submissionService;
+        private readonly IHttpUtil _httpUtil;
+        private readonly IFormService _formService;
+        private readonly ISubmissionService _submissionService;
 
-        public StatisticsService(IFormService formService, ISubmissionService submissionService) {
-            this.formService = formService;
-            this.submissionService = submissionService;
+        public StatisticsService(IHttpUtil httpUtil, IFormService formService, ISubmissionService submissionService) {
+            _httpUtil = httpUtil;
+            _formService = formService;
+            _submissionService = submissionService;
         }
 
         private void CountValue(JArray jArray, JObject data, string typeComponent) {
@@ -65,15 +66,15 @@ namespace CentralizedDataSystem.Services.Implements {
             }
         }
 
-        public async Task<List<Form>> FindFormsCanStatistics(string email) {
-            List<Form> result = await formService.FindFormsCanStatistics(email);
+        public async Task<List<Form>> FindFormsCanStatistics(string token, string email) {
+            List<Form> result = await _formService.FindFormsCanStatistics(token, email);
             return result;
         }
 
-        public async Task<JObject> AnalysisForm(string path) {
+        public async Task<JObject> AnalysisForm(string token, string path) {
             JObject analysis = new JObject();
 
-            string formsRes = await formService.FindFormWithToken(path);
+            string formsRes = await _formService.FindFormWithToken(token, path);
             JObject formResObj = JObject.Parse(formsRes);
             JArray components = (JArray)formResObj.GetValue(Keywords.COMPONENTS);
             foreach (JObject compObj in components) {
@@ -113,7 +114,7 @@ namespace CentralizedDataSystem.Services.Implements {
                 typesArr.Add(jObject);
             }
 
-            string submissionsRes = await submissionService.FindAllSubmissions(path, true);
+            string submissionsRes = await _submissionService.FindAllSubmissions(token, path, true);
             JArray submissionsResArr = JArray.Parse(submissionsRes);
             analysis.Add(Keywords.AMOUNT, submissionsResArr.Count);
             JArray jArray = null;

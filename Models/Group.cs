@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Models {
+﻿namespace CentralizedDataSystem.Models {
     public class Group {
         public string Id { get; set; }
         public string IdGroup { get; set; }
@@ -30,7 +25,6 @@ namespace CentralizedDataSystem.Models {
             this.NameParent = nameParent;
         }
 
-        public Group() {
-        }
+        public Group() { }
     }
 }

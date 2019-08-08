@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Resources {
+﻿namespace CentralizedDataSystem.Resources {
     public class Configs {
         public static readonly string MONGO_CONNECTION_STRING = "mongodb://localhost:27017";
         public static readonly string DATABASE_NAME = "formioapp";
@@ -23,5 +18,12 @@ namespace CentralizedDataSystem.Resources {
 
         public static readonly string LIMIT_QUERY = "1000000000";
 
+        public static readonly int HTTP_LIFE_TIME = 5;
+        public static readonly int COOKIE_LIFE_TIME = 30;
+
+        public static readonly string CRYPTO_PASSWORD = "XtremeMemory";
+
+        public static readonly string OWM_API_KEY = "cf76b373a6c28e3253b49e1a8f04beb7";
+        public static readonly string ID_CITY = "1580541";
     }
 }

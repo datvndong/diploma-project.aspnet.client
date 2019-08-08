@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Web;
-using System.Web.Mvc;
-using Newtonsoft.Json;
-using System.Net;
+﻿using CentralizedDataSystem.Resources;
+using CentralizedDataSystem.Services.Interfaces;
+using CentralizedDataSystem.Utils.Interfaces;
+using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using CentralizedDataSystem.Resources;
-using CentralizedDataSystem.Utils;
-using Newtonsoft.Json.Linq;
-using CentralizedDataSystem.Services.Interfaces;
 
 namespace CentralizedDataSystem.Services.Implements {
     public class LoginService : ILoginService {
+        private readonly IHttpUtil _httpUtil;
+
+        public LoginService(IHttpUtil httpUtil) {
+            _httpUtil = httpUtil;
+        }
+
         public async Task<HttpResponseMessage> CheckLogin(string email, string password) {
             JObject info = new JObject {
                 { Keywords.EMAIL, email },
@@ -26,11 +23,11 @@ namespace CentralizedDataSystem.Services.Implements {
                 { Keywords.DATA, info }
             };
             
-            return await HttpUtils.Instance.PostAsync(APIs.LOGIN_URL, data.ToString());
+            return await _httpUtil.PostAsync(APIs.LOGIN_URL, data.ToString());
         }
 
         public async Task<bool> Logout() {
-            HttpResponseMessage response = await HttpUtils.Instance.GetAsync(APIs.LOGOUT_URL);
+            HttpResponseMessage response = await _httpUtil.GetAsync(APIs.LOGOUT_URL);
             if (response == null) return false;
 
             return true;

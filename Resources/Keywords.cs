@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Resources {
+﻿namespace CentralizedDataSystem.Resources {
     public class Keywords {
         public static readonly string TOKEN_KEY = "x-jwt-token";
         public static readonly string TOKEN = "token";
@@ -65,8 +60,6 @@ namespace CentralizedDataSystem.Resources {
         public static readonly string SELECTBOXES = "selectboxes";
         public static readonly string SELECT = "select";
         public static readonly string RADIO = "radio";
-
-        public static readonly string EMPTY_STRING = "";
 
         public static readonly string UNKNOWN_TYPE_USER = "unknown";
         public static readonly string ANONYMOUS = "5ce8b61ea347f14bc809c815";

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Resources {
+﻿namespace CentralizedDataSystem.Resources {
     public class Messages {
         public static readonly string SERVER_ERROR = "Internal Server Error.";
         public static readonly string INVALID_ACCOUNT_ERROR = "Invalid username or password.";

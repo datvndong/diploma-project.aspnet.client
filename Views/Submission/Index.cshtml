@@ -11,8 +11,9 @@
     string path = ViewBag.Path;
 
     bool isAdmin = false;
-    if (Session[Keywords.IS_ADMIN] != null) {
-        isAdmin = (bool)Session[Keywords.IS_ADMIN];
+    if (ViewBag.User != null) {
+        User user = ViewBag.User;
+        isAdmin = user.IsAdmin;
     }
 }
 

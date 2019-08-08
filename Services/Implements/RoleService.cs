@@ -1,21 +1,24 @@
 ﻿using CentralizedDataSystem.Models;
 using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
-using CentralizedDataSystem.Utils;
+using CentralizedDataSystem.Utils.Interfaces;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace CentralizedDataSystem.Services.Implements {
     public class RoleService : IRoleService {
-        public async Task<List<Role>> FindAll() {
+        private readonly IHttpUtil _httpUtil;
+
+        public RoleService(IHttpUtil httpUtil) {
+            _httpUtil = httpUtil;
+        }
+
+        public async Task<List<Role>> FindAll(string token) {
             List<Role> list = new List<Role>();
 
-            HttpResponseMessage response = await HttpUtils.Instance.GetAsync(APIs.ROLE_URL);
+            HttpResponseMessage response = await _httpUtil.GetAsync(token, APIs.ROLE_URL);
             if (response == null) return list;
 
             string content = await response.Content.ReadAsStringAsync();
@@ -33,10 +36,10 @@ namespace CentralizedDataSystem.Services.Implements {
             return list;
         }
 
-        public async Task<Role> FindOne(string _id) {
+        public async Task<Role> FindOne(string token, string _id) {
             string apiURI = APIs.ROLE_URL + "?_id=" + _id;
 
-            HttpResponseMessage response = await HttpUtils.Instance.GetAsync(apiURI);
+            HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
             if (response == null) return null;
 
             string content = await response.Content.ReadAsStringAsync();

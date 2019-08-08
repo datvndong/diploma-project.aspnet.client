@@ -1,7 +1,10 @@
 ﻿@using CentralizedDataSystem.Models;
 @using CentralizedDataSystem.Resources;
 @{
-    User user = (User) Session[Keywords.USER];
+    User user = new User();
+    if (ViewBag.User != null) {
+        user = ViewBag.User;
+    }
 }
 
 <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex flex-row">

@@ -1,31 +1,33 @@
 ﻿using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
-using CentralizedDataSystem.Utils;
+using CentralizedDataSystem.Utils.Interfaces;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace CentralizedDataSystem.Services.Implements {
     public class SubmissionService : ISubmissionService {
-        public async Task<string> FindSubmissionsByPage(string path, int page) {
+        private readonly IHttpUtil _httpUtil;
+
+        public SubmissionService(IHttpUtil httpUtil) {
+            _httpUtil = httpUtil;
+        }
+
+        public async Task<string> FindSubmissionsByPage(string token, string path, int page) {
             string apiURI = APIs.GetListSubmissionsURL(path) + "?select=data&limit=" + Configs.NUMBER_ROWS_PER_PAGE + "&skip="
                     + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE;
 
-            HttpResponseMessage response = await HttpUtils.Instance.GetAsync(apiURI);
+            HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
             if (response == null) return "[]";
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
         }
 
-        public async Task<long> CountSubmissions(string path) {
+        public async Task<long> CountSubmissions(string token, string path) {
             string apiURI = APIs.GetListSubmissionsURL(path) + "?limit=" + Configs.LIMIT_QUERY + "&select=_id";
 
-            HttpResponseMessage response = await HttpUtils.Instance.GetAsync(apiURI);
+            HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
             if (response == null) return 0;
 
             string content = await response.Content.ReadAsStringAsync();
@@ -34,13 +36,13 @@ namespace CentralizedDataSystem.Services.Implements {
             return jArray.Count;
         }
 
-        public async Task<string> FindAllSubmissions(string path, bool isGetOnlyData) {
+        public async Task<string> FindAllSubmissions(string token, string path, bool isGetOnlyData) {
             string apiURI = APIs.GetListSubmissionsURL(path) + "?limit=" + Configs.LIMIT_QUERY;
             if (isGetOnlyData) {
                 apiURI += "&select=data";
             }
 
-            HttpResponseMessage response = await HttpUtils.Instance.GetAsync(apiURI);
+            HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
             if (response == null) return "{}";
 
             string content = await response.Content.ReadAsStringAsync();

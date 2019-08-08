@@ -1,11 +1,8 @@
 ﻿using CentralizedDataSystem.Resources;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace CentralizedDataSystem.Utils {
-    public class CalculateUtils {
+    public class CalculateUtil {
         public static int GetDurationPercent(string start, string expired) {
 
             DateTime dateStart = DateTime.Parse(start);

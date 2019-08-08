@@ -1,49 +1,70 @@
 ﻿using CentralizedDataSystem.Models;
 using CentralizedDataSystem.Resources;
-using CentralizedDataSystem.Services;
+using CentralizedDataSystem.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class BaseController : Controller {
         private string LoginAuthentication() {
-            User user = (User)Session[Keywords.USER];
+            HttpCookie cookie = Request.Cookies[Keywords.USER];
 
-            if (user != null && user.Token.GetType() == typeof(string)) {
-                return Keywords.EMPTY_STRING;
+            if (cookie != null) {
+                return string.Empty;
             }
 
             TempData[Keywords.ERROR] = Messages.LOGIN_TO_CONTINUE;
             return ViewName.LOGIN;
         }
 
+        protected void SetUserInfoToCooke(User user) {
+            string encVal = null;
+            if (user != null) {
+                string serUser = SerializeUtil.SerializeAnObject(user);
+                encVal = EncDecUtil.Encrypt(serUser, Configs.CRYPTO_PASSWORD);
+            }
+
+            HttpCookie cookie = new HttpCookie(Keywords.USER) {
+                Value = encVal,
+                Expires = DateTime.Now.AddDays(user != null ? Configs.COOKIE_LIFE_TIME : -1)
+            };
+            Response.Cookies.Add(cookie);
+        }
+
         protected string AdminAuthentication() {
             string loginAuthenResult = LoginAuthentication();
-            if (!loginAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!string.Empty.Equals(loginAuthenResult)) {
                 return loginAuthenResult;
             }
 
-            object isAdmin = Session[Keywords.IS_ADMIN];
-            if (isAdmin != null && (bool)isAdmin) {
-                return Keywords.EMPTY_STRING;
+            User info = GetUser();
+            if (info != null && info.IsAdmin) {
+                return string.Empty;
             }
+
             return ViewName.ERROR_403;
         }
 
         protected string UserAuthentication() {
             string loginAuthenResult = LoginAuthentication();
-            if (!loginAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!loginAuthenResult.Equals(string.Empty)) {
                 return loginAuthenResult;
             }
 
-            object isAdmin = Session[Keywords.IS_ADMIN];
-            if (isAdmin != null && !((bool)isAdmin)) {
-                return Keywords.EMPTY_STRING;
+            User info = GetUser();
+            if (info != null && !info.IsAdmin) {
+                return string.Empty;
             }
+
             return ViewName.ERROR_403;
+        }
+
+        protected User GetUser() {
+            string infoStr = EncDecUtil.Decrypt(Request.Cookies[Keywords.USER].Value, Configs.CRYPTO_PASSWORD);
+            User user = SerializeUtil.DeSerializeAnObject(infoStr, typeof(User)) as User;
+
+            return user;
         }
     }
 }

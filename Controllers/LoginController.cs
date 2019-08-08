@@ -1,26 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using CentralizedDataSystem.Models;
+using CentralizedDataSystem.Resources;
+using CentralizedDataSystem.Services.Interfaces;
+using Newtonsoft.Json.Linq;
 using System.Linq;
-using System.Text;
-using System.Web;
-using System.Web.Mvc;
-using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using CentralizedDataSystem.Resources;
-using Newtonsoft.Json.Linq;
-using CentralizedDataSystem.Models;
-using CentralizedDataSystem.Utils;
-using CentralizedDataSystem.Services.Interfaces;
+using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class LoginController : BaseController {
-        private readonly ILoginService loginService;
+        private readonly ILoginService _loginService;
 
         public LoginController(ILoginService loginService) {
-            this.loginService = loginService;
+            _loginService = loginService;
         }
 
         [HttpGet]
@@ -33,8 +26,7 @@ namespace CentralizedDataSystem.Controllers {
             string email = form[Keywords.EMAIL];
             string password = form[Keywords.PASSWORD];
 
-            HttpUtils.Instance.RemoveToken();
-            HttpResponseMessage response = await loginService.CheckLogin(email, password);
+            HttpResponseMessage response = await _loginService.CheckLogin(email, password);
 
             if (response == null) {
                 TempData[Keywords.ERROR] = Messages.SERVER_ERROR;
@@ -47,17 +39,19 @@ namespace CentralizedDataSystem.Controllers {
             }
 
             string token = response.Headers.TryGetValues(Keywords.TOKEN_KEY, out var values) ? values.FirstOrDefault() : null;
-            HttpUtils.Instance.SetToken(token);
-
             string content = await response.Content.ReadAsStringAsync();
 
             JObject jObject = JObject.Parse(content);
             JObject dataJSON = (JObject)jObject.GetValue(Keywords.DATA);
+
+            string name = dataJSON.GetValue(Keywords.NAME).ToString();
             bool isAdmin = !dataJSON.ContainsKey(Keywords.PERMISSION);
-            Session[Keywords.IS_ADMIN] = isAdmin;
+            User user = null;
 
             if (isAdmin) {
-                Session[Keywords.USER] = new User(email, dataJSON.GetValue(Keywords.NAME).ToString(), token);
+                user = new User(email, name, token, isAdmin);
+                SetUserInfoToCooke(user);
+
                 return RedirectToAction(Keywords.INDEX, Keywords.DASHBOARD);
             }
 
@@ -69,33 +63,31 @@ namespace CentralizedDataSystem.Controllers {
 
             // Set User Info
             string id = jObject.GetValue(Keywords.ID).ToString();
-            string name = dataJSON.GetValue(Keywords.NAME).ToString();
             string idGroup = dataJSON.GetValue(Keywords.ID_GROUP).ToString();
             string gender = dataJSON.GetValue(Keywords.GENDER).ToString();
-            string phoneNumber = Keywords.EMPTY_STRING;
+            string phoneNumber = string.Empty;
             if (dataJSON.ContainsKey(Keywords.PHONE)) {
                 phoneNumber = dataJSON.GetValue(Keywords.PHONE).ToString();
             }
-            string address = Keywords.EMPTY_STRING;
+            string address = string.Empty;
             if (dataJSON.ContainsKey(Keywords.ADDRESS)) {
                 address = dataJSON.GetValue(Keywords.ADDRESS).ToString();
             }
 
-            Session[Keywords.USER] = new User(email, name, token, idGroup, gender, phoneNumber, address, id);
+            user = new User(email, name, token, idGroup, gender, phoneNumber, address, id, isAdmin);
+            SetUserInfoToCooke(user);
 
             return RedirectToAction(Keywords.INDEX, Keywords.REPORT, new { page = 1 });
         }
 
         [HttpGet]
         public async Task<ActionResult> Logout() {
-            Session.Remove(Keywords.USER);
+            SetUserInfoToCooke(null);
 
-            bool isLogout = await loginService.Logout();
+            bool isLogout = await _loginService.Logout();
             if (!isLogout) {
                 TempData[Keywords.ERROR] = Messages.SERVER_ERROR;
             }
-
-            HttpUtils.Instance.RemoveToken();
 
             return RedirectToAction(Keywords.INDEX);
         }

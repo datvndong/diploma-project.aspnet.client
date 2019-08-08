@@ -1,35 +1,35 @@
 ﻿using CentralizedDataSystem.Models;
 using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
-using CentralizedDataSystem.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class UserController : BaseController {
-        private readonly IUserService userService;
-        private readonly ISubmissionService submissionService;
-        private readonly IGroupService groupService;
-        //private readonly IReadSurveyService readSurveyService;
+        private readonly IUserService _userService;
+        private readonly ISubmissionService _submissionService;
+        private readonly IGroupService _groupService;
+        //private readonly IReadSurveyService _readSurveyService;
 
         public UserController(IUserService userService, ISubmissionService submissionService, IGroupService groupService) {
-            this.userService = userService;
-            this.submissionService = submissionService;
-            this.groupService = groupService;
+            _userService = userService;
+            _submissionService = submissionService;
+            _groupService = groupService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(string idGroup, int page, string keyword) {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
+
+            User user = GetUser();
+            string token = user.Token;
 
             bool isRootGroup = idGroup.Equals(Keywords.ROOT_GROUP);
             List<Group> groups = new List<Group>();
@@ -41,29 +41,29 @@ namespace CentralizedDataSystem.Controllers {
 
             if (keyword == null) {
                 // Normal case
-                sizeListUsers = isRootGroup ? await submissionService.CountSubmissions(Keywords.USER.ToLower())
-                        : await userService.CountUsers(idGroup);
+                sizeListUsers = isRootGroup ? await _submissionService.CountSubmissions(token, Keywords.USER.ToLower())
+                        : await _userService.CountUsers(token, idGroup);
                 totalPages = (int)Math.Ceiling((float)sizeListUsers / Configs.NUMBER_ROWS_PER_PAGE);
 
-                Group currentGroup = await groupService.FindGroupParent(isRootGroup ? "data.idParent=root" : "data.idGroup=" + idGroup);
-                Group parentGroup = await groupService.FindGroupParent("data.idGroup=" + currentGroup.IdParent);
+                Group currentGroup = await _groupService.FindGroupParent(token, isRootGroup ? "data.idParent=root" : "data.idGroup=" + idGroup);
+                Group parentGroup = await _groupService.FindGroupParent(token, "data.idGroup=" + currentGroup.IdParent);
                 if (parentGroup == null) {
                     groups.Add(currentGroup);
                 } else {
-                    groups = await groupService.FindListChildGroupByIdParentWithPage(parentGroup.IdGroup, parentGroup.Name, 0);
+                    groups = await _groupService.FindListChildGroupByIdParentWithPage(token, parentGroup.IdGroup, parentGroup.Name, 0);
                 }
 
-                userResByPage = isRootGroup ? await submissionService.FindSubmissionsByPage(Keywords.USER.ToLower(), page)
-                        : await userService.FindUsersByPageAndIdGroup(idGroup, page);
+                userResByPage = isRootGroup ? await _submissionService.FindSubmissionsByPage(token, Keywords.USER.ToLower(), page)
+                        : await _userService.FindUsersByPageAndIdGroup(token, idGroup, page);
 
                 ViewBag.IdGroup = isRootGroup ? Keywords.ROOT_GROUP : idGroup;
             } else {
                 // Search by name
-                sizeListUsers = await userService.CountUsersByName(keyword);
+                sizeListUsers = await _userService.CountUsersByName(token, keyword);
                 totalPages = (int)Math.Ceiling((float)sizeListUsers / Configs.NUMBER_ROWS_PER_PAGE);
-                userResByPage = await userService.FindUsersByPageAndName(keyword, page);
+                userResByPage = await _userService.FindUsersByPageAndName(token, keyword, page);
 
-                Group rootGroup = await groupService.FindGroupParent("data.idParent=root");
+                Group rootGroup = await _groupService.FindGroupParent(token, "data.idParent=root");
                 groups.Add(rootGroup);
 
                 ViewBag.IdGroup = null;
@@ -80,19 +80,19 @@ namespace CentralizedDataSystem.Controllers {
                     continue;
                 }
 
-                string phoneNumber = Keywords.EMPTY_STRING;
+                string phoneNumber = string.Empty;
                 if (dataObject.ContainsKey(Keywords.PHONE)) {
                     phoneNumber = dataObject.GetValue(Keywords.PHONE).ToString();
                 }
-                string address = Keywords.EMPTY_STRING;
+                string address = string.Empty;
                 if (dataObject.ContainsKey(Keywords.ADDRESS)) {
                     address = dataObject.GetValue(Keywords.ADDRESS).ToString();
                 }
 
-                string groupName = Keywords.EMPTY_STRING;
+                string groupName = string.Empty;
                 idGroup = dataObject.GetValue(Keywords.ID_GROUP).ToString();
                 if (!idGroup.Equals(Keywords.ROOT_GROUP)) {
-                    groupName = await groupService.FindGroupFieldByIdGroup(idGroup, Keywords.NAME);
+                    groupName = await _groupService.FindGroupFieldByIdGroup(token, idGroup, Keywords.NAME);
                 }
 
                 users.Add(new User(id, dataObject.GetValue(Keywords.EMAIL).ToString(), dataObject.GetValue(Keywords.NAME).ToString(),
@@ -103,6 +103,7 @@ namespace CentralizedDataSystem.Controllers {
             ViewBag.ListGroups = groups;
             ViewBag.CurrPage = page;
             ViewBag.TotalPages = totalPages;
+            ViewBag.User = user;
             ViewBag.Title = "Users management";
 
             return View();
@@ -111,11 +112,12 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public ActionResult Create() {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
             ViewBag.Link = APIs.ModifiedForm(Keywords.USER.ToLower());
+            ViewBag.User = GetUser();
             ViewBag.Title = "Create new User";
 
             return View(ViewName.SEND_REPORT);
@@ -124,11 +126,14 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> Edit(string id) {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            string infoRes = await userService.FindUserDataById(Keywords.USER.ToLower(), id);
+            User user = GetUser();
+            string token = user.Token;
+
+            string infoRes = await _userService.FindUserDataById(token, Keywords.USER.ToLower(), id);
 
             JObject jObject = JObject.Parse(infoRes);
             JObject dataObject = (JObject)jObject.GetValue(Keywords.DATA);
@@ -136,6 +141,7 @@ namespace CentralizedDataSystem.Controllers {
             ViewBag.Link = APIs.ModifiedForm(Keywords.USER.ToLower());
             ViewBag.Id = id;
             ViewBag.Data = JsonConvert.SerializeObject(dataObject);
+            ViewBag.User = user;
             ViewBag.Title = "Edit Group";
 
             return View(ViewName.EDIT_REPORT);
@@ -144,16 +150,17 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> ProfileInfo() {
             string userAuthenResult = UserAuthentication();
-            if (!userAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
+            string token = user.Token;
 
-            string groupName = Keywords.EMPTY_STRING;
+            string groupName = string.Empty;
             string idGroup = user.IdGroup;
             if (!idGroup.Equals(Keywords.ROOT_GROUP)) {
-                groupName = await groupService.FindGroupFieldByIdGroup(idGroup, Keywords.NAME);
+                groupName = await _groupService.FindGroupFieldByIdGroup(token, idGroup, Keywords.NAME);
             }
             user.NameGroup = groupName;
 
@@ -172,11 +179,12 @@ namespace CentralizedDataSystem.Controllers {
         [HttpPost]
         public async Task<ActionResult> UpdateProfile(FormCollection form) {
             string userAuthenResult = UserAuthentication();
-            if (!userAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
+
             string name = form[Keywords.NAME];
             string email = form[Keywords.EMAIL];
             string gender = form[Keywords.GENDER]; 
@@ -189,18 +197,18 @@ namespace CentralizedDataSystem.Controllers {
             if (!id.Equals(user.Id) || !idGroup.Equals(user.IdGroup)) {
                 return Json(new { success = false, responseText = Messages.UNAUTHORIZED_MESSAGE }, JsonRequestBehavior.AllowGet);
             }
-            if (name == null || name.Equals(Keywords.EMPTY_STRING)) {
+            if (name == null || name.Equals(string.Empty)) {
                 return Json(new { success = false, responseText = Messages.FILL(Keywords.NAME) }, JsonRequestBehavior.AllowGet);
             }
-            if (email == null|| email.Equals(Keywords.EMPTY_STRING)) {
+            if (email == null|| email.Equals(string.Empty)) {
                 return Json(new { success = false, responseText = Messages.FILL(Keywords.EMAIL) }, JsonRequestBehavior.AllowGet);
             }
 
-            User newUser = new User(email, name, token, idGroup, gender, phoneNumber, address, id);
+            User newUser = new User(email, name, token, idGroup, gender, phoneNumber, address, id, false);
 
-            string res = await userService.UpdateUserInfo(newUser, Keywords.USER.ToLower());
+            string res = await _userService.UpdateUserInfo(newUser, Keywords.USER.ToLower());
 
-            Session[Keywords.USER] = newUser;
+            SetUserInfoToCooke(newUser);
 
             return Json(new { success = true, responseText = res }, JsonRequestBehavior.AllowGet);
         }

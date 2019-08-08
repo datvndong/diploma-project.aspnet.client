@@ -1,35 +1,33 @@
 ﻿using CentralizedDataSystem.Models;
-using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class DashboardController : BaseController {
-        private readonly IDashboardService dashboardService;
+        private readonly IDashboardService _dashboardService;
 
         public DashboardController(IDashboardService dashboardService) {
-            this.dashboardService = dashboardService;
+            _dashboardService = dashboardService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index() {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
+            string email = user.Email;
+            string token = user.Token;
 
+            ViewBag.Groups = await _dashboardService.FindNumberGroups(token);
+            ViewBag.Forms = await _dashboardService.FindNumberForms(email);
+            ViewBag.Users = await _dashboardService.FindNumberUsers(token);
+            ViewBag.City = await _dashboardService.GetCityInfo();
+            ViewBag.User = user;
             ViewBag.Title = "Dashboard";
-            ViewBag.Groups = await dashboardService.FindNumberGroups();
-            ViewBag.Forms = await dashboardService.FindNumberForms(user.Email);
-            ViewBag.Users = await dashboardService.FindNumberUsers();
-            ViewBag.City = await dashboardService.GetCityInfo();
 
             return View();
         }

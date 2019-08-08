@@ -5,35 +5,33 @@ using CentralizedDataSystem.Utils;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class ReportController : BaseController {
-        private readonly IFormService formService;
-        private readonly IFormControlService formControlService;
-        private readonly ISubmissionService submissionService;
-        private readonly IGroupService groupService;
+        private readonly IFormService _formService;
+        private readonly IFormControlService _formControlService;
+        private readonly ISubmissionService _submissionService;
+        private readonly IGroupService _groupService;
 
         public ReportController(IFormService formService, IFormControlService formControlService, ISubmissionService submissionService, IGroupService groupService) {
-            this.formService = formService;
-            this.formControlService = formControlService;
-            this.submissionService = submissionService;
-            this.groupService = groupService;
+            _formService = formService;
+            _formControlService = formControlService;
+            _submissionService = submissionService;
+            _groupService = groupService;
         }
 
-        private async Task<List<Form>> AddFormToList(List<Form> listForm, List<FormControl> listFormControl) {
+        private async Task<List<Form>> AddFormToList(string token, List<Form> listForm, List<FormControl> listFormControl) {
             foreach (FormControl formControl in listFormControl) {
                 string path = formControl.PathForm;
                 string start = formControl.Start;
                 string expired = formControl.Expired;
 
-                int durationPercent = CalculateUtils.GetDurationPercent(start, expired);
-                string typeProgressBar = CalculateUtils.GetTypeProgressBar(durationPercent);
+                int durationPercent = CalculateUtil.GetDurationPercent(start, expired);
+                string typeProgressBar = CalculateUtil.GetTypeProgressBar(durationPercent);
 
-                string formRes = await formService.FindFormWithToken(path);
+                string formRes = await _formService.FindFormWithToken(token, path);
                 JObject formResJSON = JObject.Parse(formRes);
                 if (formResJSON.Count == 0) return listForm;
                 string title = formResJSON.GetValue(Keywords.TITLE).ToString();
@@ -43,11 +41,11 @@ namespace CentralizedDataSystem.Controllers {
                     tags.Add(tag.ToString());
                 }
 
-                string submissionsRes = await submissionService.FindSubmissionsByPage(path, 1);
+                string submissionsRes = await _submissionService.FindSubmissionsByPage(token, path, 1);
                 JArray submissionResJSON = JArray.Parse(submissionsRes);
                 bool isSubmitted = submissionResJSON.Count != 0;
 
-                bool isPending = CalculateUtils.IsFormPendingOrExpired(start);
+                bool isPending = CalculateUtil.IsFormPendingOrExpired(start);
 
                 listForm.Add(new Form(title, path, start, expired, tags, durationPercent, typeProgressBar, isSubmitted, isPending));
             }
@@ -55,28 +53,28 @@ namespace CentralizedDataSystem.Controllers {
             return listForm;
         }
 
-        private async Task<List<Form>> GetListFormByIdGroupRecursive(List<Form> listForm, string id) {
-            List<FormControl> listFormsGroup = await formControlService.FindByAssign(id);
-            await AddFormToList(listForm, listFormsGroup);
+        private async Task<List<Form>> GetListFormByIdGroupRecursive(string token, List<Form> listForm, string id) {
+            List<FormControl> listFormsGroup = await _formControlService.FindByAssign(id);
+            await AddFormToList(token, listForm, listFormsGroup);
 
             // Check if idGroup have idParent
-            string nextIdParent = await groupService.FindGroupFieldByIdGroup(id, Keywords.ID_PARENT);
+            string nextIdParent = await _groupService.FindGroupFieldByIdGroup(token, id, Keywords.ID_PARENT);
 
             if (!nextIdParent.Equals(Keywords.ROOT_GROUP)) {
-                await GetListFormByIdGroupRecursive(listForm, nextIdParent);
+                await GetListFormByIdGroupRecursive(token, listForm, nextIdParent);
             }
 
             return listForm;
         }
 
-        private async Task<bool> IsFormAssignToUser(string assignIdGroup, string formIdGroup) {
+        private async Task<bool> IsFormAssignToUser(string token, string assignIdGroup, string formIdGroup) {
             if (assignIdGroup.Equals(formIdGroup)) {
                 return true;
             }
 
-            string nextIdParent = await groupService.FindGroupFieldByIdGroup(formIdGroup, Keywords.ID_PARENT);
+            string nextIdParent = await _groupService.FindGroupFieldByIdGroup(token, formIdGroup, Keywords.ID_PARENT);
             if (!nextIdParent.Equals(Keywords.ROOT_GROUP)) {
-                return await IsFormAssignToUser(assignIdGroup, nextIdParent);
+                return await IsFormAssignToUser(token, assignIdGroup, nextIdParent);
             } else {
                 return false;
             }
@@ -85,17 +83,18 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> Index(int page) {
             string userAuthenResult = UserAuthentication();
-            if (!userAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
+            string token = user.Token;
 
-            List<Form> listAllForms = await GetListFormByIdGroupRecursive(new List<Form>(), user.IdGroup);
+            List<Form> listAllForms = await GetListFormByIdGroupRecursive(token, new List<Form>(), user.IdGroup);
             List<Form> listFormsByPage = new List<Form>();
 
-            List<FormControl> listFormsAuth = await formControlService.FindByAssign(Keywords.AUTHENTICATED);
-            await AddFormToList(listAllForms, listFormsAuth);
+            List<FormControl> listFormsAuth = await _formControlService.FindByAssign(Keywords.AUTHENTICATED);
+            await AddFormToList(token, listAllForms, listFormsAuth);
 
             int numberRowsPerPage = Configs.NUMBER_ROWS_PER_PAGE;
             int sizeListReports = listAllForms.Count;
@@ -124,6 +123,7 @@ namespace CentralizedDataSystem.Controllers {
             ViewBag.List = listFormsByPage;
             ViewBag.CurrPage = page;
             ViewBag.TotalPages = totalPages;
+            ViewBag.User = user;
             ViewBag.Title = "Reports";
 
             return View();
@@ -132,33 +132,36 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> Auth(string path) {
             string userAuthenResult = UserAuthentication();
-            if (!userAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
+            string token = user.Token;
 
-            FormControl formControl = await formControlService.FindByPathForm(path);
+            FormControl formControl = await _formControlService.FindByPathForm(path);
             if (formControl == null) {
                 return View(ViewName.ERROR_404);
             }
             string assign = formControl.Assign;
 
-            bool isFormPending = CalculateUtils.IsFormPendingOrExpired(formControl.Start);
-            bool isFormExpired = !CalculateUtils.IsFormPendingOrExpired(formControl.Expired);
+            bool isFormPending = CalculateUtil.IsFormPendingOrExpired(formControl.Start);
+            bool isFormExpired = !CalculateUtil.IsFormPendingOrExpired(formControl.Expired);
             if (isFormPending || isFormExpired) {
                 return View(ViewName.ERROR_403);
             }
 
-            if (assign.Equals(Keywords.AUTHENTICATED) || await IsFormAssignToUser(assign, user.IdGroup)) {
-                string res1 = await formService.FindFormWithToken(path);
+            bool isFormAssignToUser = await IsFormAssignToUser(token, assign, user.IdGroup);
+            if (assign.Equals(Keywords.AUTHENTICATED) || isFormAssignToUser) {
+                string res1 = await _formService.FindFormWithToken(token, path);
                 JObject resJSON = JObject.Parse(res1);
 
-                string res2 = await submissionService.FindSubmissionsByPage(path, 1);
+                string res2 = await _submissionService.FindSubmissionsByPage(token, path, 1);
                 bool isNotSubmitted = JArray.Parse(res2).Count == 0;
 
-                ViewBag.Link = isNotSubmitted ? APIs.ModifiedForm(path) : Keywords.EMPTY_STRING;
+                ViewBag.Link = isNotSubmitted ? APIs.ModifiedForm(path) : string.Empty;
                 ViewBag.Title = isNotSubmitted ? resJSON.GetValue(Keywords.TITLE).ToString() : Messages.HAS_SUBMITTED_MESSAGE;
+                ViewBag.User = user;
 
                 return View(ViewName.SEND_REPORT);
             }
@@ -168,7 +171,7 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public async Task<ActionResult> Anon(string path) {
-            JObject formJSON = JObject.Parse(await formService.FindFormWithNoToken(path));
+            JObject formJSON = JObject.Parse(await _formService.FindFormWithNoToken(path));
             if (formJSON.Count == 0) {
                 return View(ViewName.ERROR_403);
             }
@@ -188,33 +191,35 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> Edit(string path) {
             string userAuthenResult = UserAuthentication();
-            if (!userAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!userAuthenResult.Equals(string.Empty)) {
                 return View(userAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
+            string token = user.Token;
 
-            FormControl formControl = await formControlService.FindByPathForm(path);
+            FormControl formControl = await _formControlService.FindByPathForm(path);
             if (formControl == null) {
                 return View(ViewName.ERROR_404);
             }
             string assign = formControl.Assign;
 
-            bool isFormPending = CalculateUtils.IsFormPendingOrExpired(formControl.Start);
-            bool isFormExpired = !CalculateUtils.IsFormPendingOrExpired(formControl.Expired);
+            bool isFormPending = CalculateUtil.IsFormPendingOrExpired(formControl.Start);
+            bool isFormExpired = !CalculateUtil.IsFormPendingOrExpired(formControl.Expired);
             if (isFormPending || isFormExpired) {
                 return View(ViewName.ERROR_403);
             }
 
-            if (assign.Equals(Keywords.AUTHENTICATED) || await IsFormAssignToUser(assign, user.IdGroup)) {
-                string res1 = await formService.FindFormWithToken(path);
+            bool isFormAssignToUser = await IsFormAssignToUser(token, assign, user.IdGroup);
+            if (assign.Equals(Keywords.AUTHENTICATED) || isFormAssignToUser) {
+                string res1 = await _formService.FindFormWithToken(token, path);
                 JObject resJSON = JObject.Parse(res1);
 
-                string res2 = await submissionService.FindSubmissionsByPage(path, 1);
+                string res2 = await _submissionService.FindSubmissionsByPage(token, path, 1);
                 JArray jsonArray = JArray.Parse(res2);
                 bool isNotSubmitted = jsonArray.Count == 0;
                 if (isNotSubmitted) {
-                    ViewBag.Link = Keywords.EMPTY_STRING;
+                    ViewBag.Link = string.Empty;
                     ViewBag.Title = Messages.HAS_NOT_SUBMITTED_MESSAGE;
                 } else {
                     ViewBag.Link = APIs.ModifiedForm(path);
@@ -222,6 +227,7 @@ namespace CentralizedDataSystem.Controllers {
                     ViewBag.Id = ((JObject)jsonArray[0]).GetValue(Keywords.ID).ToString();
                     ViewBag.Data = ((JObject)jsonArray[0]).GetValue(Keywords.DATA).ToString();
                 }
+                ViewBag.User = user;
 
                 return View(ViewName.EDIT_REPORT);
             }

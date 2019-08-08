@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
 
 namespace CentralizedDataSystem.Models {
     public class Form {
@@ -49,7 +46,6 @@ namespace CentralizedDataSystem.Models {
             this.Path = path;
         }
 
-        public Form() {
-        }
+        public Form() { }
     }
 }

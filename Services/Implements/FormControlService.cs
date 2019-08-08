@@ -2,22 +2,19 @@
 using CentralizedDataSystem.Repositories.Interfaces;
 using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
-using CentralizedDataSystem.Utils;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace CentralizedDataSystem.Services.Implements {
     public class FormControlService : IFormControlService {
-        private readonly IMongoRepository mongoRepository;
+        private readonly IMongoRepository _mongoRepository;
 
         public FormControlService(IMongoRepository mongoRepository) {
-            this.mongoRepository = mongoRepository;
-            this.mongoRepository.InitCollection(Collections.FORMS_CONTROL);
+            _mongoRepository = mongoRepository;
+            _mongoRepository.InitCollection(Collections.FORMS_CONTROL);
         }
 
         private FormControl CreateFormControlFromBson(BsonDocument document) {
@@ -31,7 +28,7 @@ namespace CentralizedDataSystem.Services.Implements {
         }
 
         public async Task<FormControl> FindByPathForm(string pathForm) {
-            IAsyncCursor<BsonDocument> result = await mongoRepository.FindBy(Keywords.PATH_FORM, pathForm);
+            IAsyncCursor<BsonDocument> result = await _mongoRepository.FindBy(Keywords.PATH_FORM, pathForm);
             FormControl formControl = null;
 
             if (result == null) return formControl;
@@ -48,7 +45,7 @@ namespace CentralizedDataSystem.Services.Implements {
         }
 
         public async Task<List<FormControl>> FindByOwner(string email) {
-            IAsyncCursor<BsonDocument> result = await mongoRepository.FindBy(Keywords.OWNER, email);
+            IAsyncCursor<BsonDocument> result = await _mongoRepository.FindBy(Keywords.OWNER, email);
             List<FormControl> formControls = new List<FormControl>();
 
             if (result == null) return formControls;
@@ -74,7 +71,7 @@ namespace CentralizedDataSystem.Services.Implements {
                 { Keywords.EXPIRED, formControl.Expired }
             };
 
-            return mongoRepository.Insert(document);
+            return _mongoRepository.Insert(document);
         }
 
         public async Task<long> Update(FormControl formControl, string oldPath) {
@@ -85,12 +82,12 @@ namespace CentralizedDataSystem.Services.Implements {
                                                     .Set(Keywords.START, formControl.Start)
                                                     .Set(Keywords.EXPIRED, formControl.Expired);
 
-            long updateResult = await mongoRepository.Update(filter, update);
+            long updateResult = await _mongoRepository.Update(filter, update);
             return updateResult;
         }
 
         public async Task<List<FormControl>> FindByAssign(string assign) {
-            IAsyncCursor<BsonDocument> result = await mongoRepository.FindBy(Keywords.ASSIGN, assign);
+            IAsyncCursor<BsonDocument> result = await _mongoRepository.FindBy(Keywords.ASSIGN, assign);
             List<FormControl> formControls = new List<FormControl>();
 
             if (result == null) return formControls;
@@ -108,7 +105,7 @@ namespace CentralizedDataSystem.Services.Implements {
         }
 
         public async Task<bool> DeleteByPathForm(string pathForm) {
-            bool deleteResult = await mongoRepository.DeleteBy(Keywords.PATH_FORM, pathForm);
+            bool deleteResult = await _mongoRepository.DeleteBy(Keywords.PATH_FORM, pathForm);
             return deleteResult;
         }
     }

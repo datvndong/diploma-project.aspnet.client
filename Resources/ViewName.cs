@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace CentralizedDataSystem.Resources {
+﻿namespace CentralizedDataSystem.Resources {
     public class ViewName {
         public static readonly string LOGIN = "~/Views/Login/Index.cshtml";
 
-        public static readonly string ERROR_403 = "~/Views/Base/Error403.cshtml";
-        public static readonly string ERROR_404 = "~/Views/Base/Error404.cshtml";
-        public static readonly string ERROR_500 = "~/Views/Base/Error500.cshtml";
-        public static readonly string ERROR_UNKNOWN = "~/Views/Base/ErrorUnknown.cshtml";
+        public static readonly string ERROR_403 = "~/Views/Error/403.cshtml";
+        public static readonly string ERROR_404 = "~/Views/Error/404.cshtml";
+        public static readonly string ERROR_500 = "~/Views/Error/500.cshtml";
+        public static readonly string ERROR_UNKNOWN = "~/Views/Error/Unknown.cshtml";
 
         public static readonly string MODIFIED_FORM = "~/Views/Form/Modified.cshtml";
 

@@ -1,36 +1,34 @@
 ﻿using CentralizedDataSystem.Models;
-using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
     public class StatisticsController : BaseController {
-        private readonly IStatisticsService statisticsService;
+        private readonly IStatisticsService _statisticsService;
 
         public StatisticsController(IStatisticsService statisticsService) {
-            this.statisticsService = statisticsService;
+            _statisticsService = statisticsService;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index() {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            User user = (User)Session[Keywords.USER];
+            User user = GetUser();
             string email = user.Email;
+            string token = user.Token;
 
-            List<Form> formsCanStatistics = await statisticsService.FindFormsCanStatistics(email);
+            List<Form> formsCanStatistics = await _statisticsService.FindFormsCanStatistics(token, email);
 
             ViewBag.List = formsCanStatistics;
+            ViewBag.User = user;
             ViewBag.Title = "Statistics";
 
             return View();
@@ -39,11 +37,14 @@ namespace CentralizedDataSystem.Controllers {
         [HttpGet]
         public async Task<ActionResult> Analysis(string path) {
             string adminAuthenResult = AdminAuthentication();
-            if (!adminAuthenResult.Equals(Keywords.EMPTY_STRING)) {
+            if (!adminAuthenResult.Equals(string.Empty)) {
                 return View(adminAuthenResult);
             }
 
-            JObject result = await statisticsService.AnalysisForm(path);
+            User user = GetUser();
+            string token = user.Token;
+
+            JObject result = await _statisticsService.AnalysisForm(token, path);
 
             return Json(new { success = true, responseText = JsonConvert.SerializeObject(result) }, JsonRequestBehavior.AllowGet);
         }

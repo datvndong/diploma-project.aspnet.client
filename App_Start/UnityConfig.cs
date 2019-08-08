@@ -1,8 +1,9 @@
 using CentralizedDataSystem.Repositories.Implements;
 using CentralizedDataSystem.Repositories.Interfaces;
-using CentralizedDataSystem.Services;
 using CentralizedDataSystem.Services.Implements;
 using CentralizedDataSystem.Services.Interfaces;
+using CentralizedDataSystem.Utils.Implements;
+using CentralizedDataSystem.Utils.Interfaces;
 using System.Web.Mvc;
 using Unity;
 using Unity.Mvc5;
@@ -32,6 +33,9 @@ namespace CentralizedDataSystem {
 
             // Repository
             container.RegisterType<IMongoRepository, MongoRepository>();
+
+            // Util
+            container.RegisterType<IHttpUtil, HttpUtil>();
 
             DependencyResolver.SetResolver(new UnityDependencyResolver(container));
         }

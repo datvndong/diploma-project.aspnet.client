@@ -4,17 +4,16 @@
     string title = ViewBag.Title;
 
     bool isAdmin = false;
-    if (Session[Keywords.IS_ADMIN] != null) {
-        isAdmin = (bool)Session[Keywords.IS_ADMIN];
-    }
+    string token = string.Empty;
 
-    string token = "";
-    User user = null;
-    if (Session[Keywords.USER] != null) {
-        user = (User)Session[Keywords.USER];
+    User user = new User();
+    if (ViewBag.User != null) {
+        user = ViewBag.User;
         token = user.Token;
+        isAdmin = user.IsAdmin;
     }
 }
+
 <!DOCTYPE html>
 <html>
 <head>

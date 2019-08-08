@@ -23,7 +23,7 @@ namespace CentralizedDataSystem.Controllers {
             if (user == null) {
                 TempData[Keywords.ERROR] = Messages.LOGIN_TO_CONTINUE;
                 return RedirectToAction(Keywords.INDEX, Keywords.LOGIN);
-            };
+            }
 
             string token = user.Token;
 

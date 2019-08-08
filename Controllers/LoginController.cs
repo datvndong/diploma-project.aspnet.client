@@ -18,7 +18,18 @@ namespace CentralizedDataSystem.Controllers {
 
         [HttpGet]
         public ActionResult Index() {
-            return View();
+            // This controller can used by Admin and User -> so can't authen by normal way in BaseController
+            User user = GetUser();
+
+            if (user == null) {
+                return View();
+            }
+
+            if (user.IsAdmin) {
+                return RedirectToAction(Keywords.INDEX, Keywords.DASHBOARD);
+            }
+
+            return RedirectToAction(Keywords.INDEX, Keywords.REPORT, new { page = 1 });
         }
 
         [HttpPost]

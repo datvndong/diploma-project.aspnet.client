@@ -61,7 +61,12 @@ namespace CentralizedDataSystem.Controllers {
         }
 
         protected User GetUser() {
-            string infoStr = EncDecUtil.Decrypt(Request.Cookies[Keywords.USER].Value, Configs.CRYPTO_PASSWORD);
+            HttpCookie cookie = Request.Cookies[Keywords.USER];
+            if (cookie == null) {
+                return null;
+            }
+
+            string infoStr = EncDecUtil.Decrypt(cookie.Value, Configs.CRYPTO_PASSWORD);
             User user = SerializeUtil.DeSerializeAnObject(infoStr, typeof(User)) as User;
 
             return user;

@@ -2,10 +2,14 @@
 using CentralizedDataSystem.Resources;
 using CentralizedDataSystem.Services.Interfaces;
 using CentralizedDataSystem.Utils.Interfaces;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace CentralizedDataSystem.Services.Implements {
@@ -118,9 +122,47 @@ namespace CentralizedDataSystem.Services.Implements {
             return content;
         }
 
+        public List<string> GetListGroupsFromFile(string pathFile) {
+            using (StreamReader reader = new StreamReader(pathFile, Encoding.UTF8)) {
+                List<string> list = new List<string>();
+                bool isFirstRow = true;
+
+                string[] labels = { Keywords.ID_GROUP, Keywords.NAME, Keywords.ID_PARENT, Keywords.STATUS };
+                int size = labels.Length;
+
+                JObject data = null;
+                JObject info = null;
+
+                while (!reader.EndOfStream) {
+                    if (isFirstRow) {
+                        reader.ReadLine();
+                        isFirstRow = false;
+                        continue;
+                    }
+
+                    data = new JObject();
+                    info = new JObject();
+
+                    string line = reader.ReadLine();
+                    string[] values = line.Split(',');
+
+                    for (int i = 0; i < size; i++) {
+                        info.Add(labels[i], values[i]);
+                    }
+                    data.Add(Keywords.DATA, info);
+
+                    list.Add(JsonConvert.SerializeObject(data));
+                }
+
+                return list;
+            }
+        }
+
         public async Task<string> InsertGroup(string token, string data) {
             HttpResponseMessage response = await _httpUtil.PostAsync(token, APIs.GetFormByAlias(Keywords.GROUP), data);
-            if (response == null) return "{}";
+            if (response == null || response.StatusCode != HttpStatusCode.Created) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

@@ -120,15 +120,40 @@ namespace CentralizedDataSystem.Controllers {
         }
 
         [HttpPost]
-        public ActionResult Upload(HttpPostedFileBase file) {
+        public async Task<ActionResult> Upload(HttpPostedFileBase file) {
+            string adminAuthenResult = await AdminAuthentication();
+            if (!adminAuthenResult.Equals(string.Empty)) {
+                return View(adminAuthenResult);
+            }
+
+            User user = GetUser();
+            string token = user.Token;
+
             try {
                 if (file.ContentLength > 0) {
-                    string _FileName = Path.GetFileName(file.FileName);
-                    string _path = Path.Combine(Server.MapPath("~/UploadedFiles"), _FileName);
-                    file.SaveAs(_path);
-                }
+                    string fileName = Path.GetFileName(file.FileName);
+                    string extension = Path.GetExtension(fileName);
 
-                TempData[Keywords.IMPORT] = Messages.IMPORT_SUCCESSFUL;
+                    if (extension.Equals("." + Keywords.CSV)) {
+                        string path = Path.Combine(Server.MapPath("~/UploadedFiles"), fileName);
+                        file.SaveAs(path);
+
+                        List<string> groups = _groupService.GetListGroupsFromFile(path);
+                        foreach (string group in groups) {
+                            string res = await _groupService.InsertGroup(token, group);
+                            if (JObject.Parse(res).Count == 0) {
+                                TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+                                return RedirectToAction(Keywords.INDEX, new { idParent = Keywords.ROOT_GROUP, page = 1 });
+                            }
+                        }
+
+                        TempData[Keywords.IMPORT] = Messages.IMPORT_SUCCESSFUL;
+                    } else {
+                        TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+                    }
+                } else {
+                    TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+                }
             } catch {
                 TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
             }

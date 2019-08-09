@@ -5,7 +5,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
@@ -211,6 +213,48 @@ namespace CentralizedDataSystem.Controllers {
             SetUserInfoToCooke(newUser);
 
             return Json(new { success = true, responseText = res }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Upload(HttpPostedFileBase file) {
+            string adminAuthenResult = await AdminAuthentication();
+            if (!adminAuthenResult.Equals(string.Empty)) {
+                return View(adminAuthenResult);
+            }
+
+            User user = GetUser();
+            string token = user.Token;
+
+            try {
+                if (file.ContentLength > 0) {
+                    string fileName = Path.GetFileName(file.FileName);
+                    string extension = Path.GetExtension(fileName);
+
+                    if (extension.Equals("." + Keywords.CSV)) {
+                        string path = Path.Combine(Server.MapPath("~/UploadedFiles"), fileName);
+                        file.SaveAs(path);
+
+                        List<string> groups = _userService.GetListUsersFromFile(path);
+                        foreach (string group in groups) {
+                            string res = await _userService.InsertUser(token, group);
+                            if (JObject.Parse(res).Count == 0) {
+                                TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+                                return RedirectToAction(Keywords.INDEX, new { idGroup = Keywords.ROOT_GROUP, page = 1 });
+                            }
+                        }
+
+                        TempData[Keywords.IMPORT] = Messages.IMPORT_SUCCESSFUL;
+                    } else {
+                        TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+                    }
+                } else {
+                    TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+                }
+            } catch {
+                TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+            }
+
+            return RedirectToAction(Keywords.INDEX, new { idGroup = Keywords.ROOT_GROUP, page = 1 });
         }
     }
 }

@@ -20,6 +20,15 @@
 
     string idGroup = ViewBag.IdGroup;
     string keyword = ViewBag.Keyword;
+
+    string import = null;
+    string alertMessClasss = "alert-danger";
+    if (TempData[Keywords.IMPORT] != null) {
+        import = TempData[Keywords.IMPORT].ToString();
+        if (import.Equals(Messages.IMPORT_SUCCESSFUL)) {
+            alertMessClasss = "alert-success";
+        }
+    }
 }
 
 @Styles.Render("~/Content/pagination.css")
@@ -30,14 +39,15 @@
                 <div class="card">
                     <div class="card-body">
                         <div id="result-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
-                        @*<th:block th:if="${importMess}">
-                                <div th:if="${importStatus}" th:text="${importMess}" class="alert-success" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
-                                <div th:unless="${importStatus}" th:text="${importMess}" class="alert-danger" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
-                            </th:block>*@
+                        @if (import != null) {
+                            <div class="@alertMessClasss" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
+                                @import
+                            </div>
+                        }
                         <h4 class="card-title">Users Table</h4>
-                        <form action="#" @*th:action="@{/users/read}" th:object="${importFile}"*@ enctype="multipart/form-data" method="post">
+                        <form action="/User/Upload" enctype="multipart/form-data" method="post">
                             <div class="input-group col-xs-12">
-                                <input type="file" class="form-control file-upload-info" th:field="*{fileDatas}" />
+                                <input type="file" name="file" class="form-control file-upload-info" />
                                 <span class="input-group-append">
                                     <button class="file-upload-browse btn btn-warning" type="submit">
                                         <i class="mdi mdi-upload"></i>Import

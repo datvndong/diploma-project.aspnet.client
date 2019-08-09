@@ -195,6 +195,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\ExportController.cs" />
     <Compile Include="Controllers\FormController.cs" />
     <Compile Include="Controllers\GroupController.cs" />

@@ -29,10 +29,10 @@
                             Form: <code style="font-size: 100%" id="form-name"></code>
                         </p>
                         @if (isAdmin) {
-                            <a href="/export/json/@path" class="btn btn-dark btn-fw">
+                            <a href="@Url.Action(Keywords.INDEX, Keywords.EXPORT, new { path = path, type = Keywords.JSON })" class="btn btn-dark btn-fw">
                                 <i class="mdi mdi-download"></i>Export JSON
                             </a>
-                            <a href="/export/csv/@path" class="btn btn-primary btn-fw">
+                            <a href="@Url.Action(Keywords.INDEX, Keywords.EXPORT, new { path = path, type = Keywords.CSV })" class="btn btn-primary btn-fw">
                                 <i class="mdi mdi-download"></i>Export CSV
                             </a>
                         }

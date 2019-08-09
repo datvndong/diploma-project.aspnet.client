@@ -43,7 +43,7 @@ namespace CentralizedDataSystem.Services.Implements {
             }
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "{}";
+            if (response == null) return "[]";
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

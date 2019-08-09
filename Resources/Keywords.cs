@@ -10,10 +10,12 @@
         public static readonly string PERMISSION = "permission";
         public static readonly string DATA = "data";
         public static readonly string PATH = "path";
+        public static readonly string ROOT_GROUP = "root";
+
         public static readonly string MEDIA_TYPE_JSON = "application/json";
+        public static readonly string MEDIA_TYPE_CSV = "application/csv";
         public static readonly string JSON = "json";
         public static readonly string CSV = "csv";
-        public static readonly string ROOT_GROUP = "root";
 
         public static readonly string TAGS = "tags";
         public static readonly string TITLE = "title";
@@ -54,6 +56,8 @@
         public static readonly string VALUES = "values";
         public static readonly string VALUE = "value";
         public static readonly string AMOUNT = "amount";
+        public static readonly string CREATED = "created";
+        public static readonly string MODIFIED = "modified";
 
         // Html components
         public static readonly string CHECKBOX = "checkbox";
@@ -87,5 +91,6 @@
         public static readonly string REPORT = "Report";
         public static readonly string PROFILE = "ProfileInfo";
         public static readonly string STATISTICS = "Statistics";
+        public static readonly string EXPORT = "Export";
     }
 }

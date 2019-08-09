@@ -195,6 +195,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\ExportController.cs" />
     <Compile Include="Controllers\FormController.cs" />
     <Compile Include="Controllers\GroupController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
@@ -222,6 +223,7 @@
     <Compile Include="Resources\ViewName.cs" />
     <Compile Include="Services\Implements\BaseService.cs" />
     <Compile Include="Services\Implements\DashboardService.cs" />
+    <Compile Include="Services\Implements\ExportService.cs" />
     <Compile Include="Services\Implements\FormControlService.cs" />
     <Compile Include="Services\Implements\FormService.cs" />
     <Compile Include="Services\Implements\GroupService.cs" />
@@ -229,6 +231,7 @@
     <Compile Include="Services\Implements\StatisticsService.cs" />
     <Compile Include="Services\Interfaces\IBaseService.cs" />
     <Compile Include="Services\Interfaces\IDashboardService.cs" />
+    <Compile Include="Services\Interfaces\IExportService.cs" />
     <Compile Include="Services\Interfaces\IFormControlService.cs" />
     <Compile Include="Services\Interfaces\IFormService.cs" />
     <Compile Include="Services\Interfaces\IGroupService.cs" />

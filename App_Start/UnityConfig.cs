@@ -21,6 +21,7 @@ namespace CentralizedDataSystem {
             // Service
             container.RegisterType<IBaseService, BaseService>();
             container.RegisterType<IDashboardService, DashboardService>();
+            container.RegisterType<IExportService, ExportService>();
             container.RegisterType<IFormControlService, FormControlService>();
             container.RegisterType<IFormService, FormService>();
             container.RegisterType<IGroupService, GroupService>();

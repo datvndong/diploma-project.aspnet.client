@@ -17,9 +17,9 @@
                         <div class="auto-form-wrapper">
                             <form action="/Login/DoLogin" method="post">
                                 @if (TempData[Keywords.ERROR] != null) {
-                                    @:<div class="form-group">
+                                    <div class="form-group">
                                         <label style="color: red">@TempData[Keywords.ERROR]</label>
-                                    @:</div>
+                                    </div>
                                 }
                                 <div class="form-group">
                                     <label class="label">Email</label>

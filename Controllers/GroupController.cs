@@ -5,7 +5,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 
 namespace CentralizedDataSystem.Controllers {
@@ -115,6 +117,23 @@ namespace CentralizedDataSystem.Controllers {
             }
 
             return Json(new { success = true, responseText = groups }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult Upload(HttpPostedFileBase file) {
+            try {
+                if (file.ContentLength > 0) {
+                    string _FileName = Path.GetFileName(file.FileName);
+                    string _path = Path.Combine(Server.MapPath("~/UploadedFiles"), _FileName);
+                    file.SaveAs(_path);
+                }
+
+                TempData[Keywords.IMPORT] = Messages.IMPORT_SUCCESSFUL;
+            } catch {
+                TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
+            }
+
+            return RedirectToAction(Keywords.INDEX, new { idParent = Keywords.ROOT_GROUP, page = 1 });
         }
     }
 }

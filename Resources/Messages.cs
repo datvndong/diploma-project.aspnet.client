@@ -19,10 +19,8 @@
             return isDeleteSuccess ? "Successfully deleted " + resource + "!" : "Error, failed to delete " + resource + ".";
         }
 
-        public static string IMPORT(bool isImportSuccess) {
-            return isImportSuccess ? "Successfully imported datas to Database!"
-                    : "Error, failed to delete imported datas to Database.";
-        }
+        public static readonly string IMPORT_SUCCESSFUL = "Successfully imported datas!";
+        public static readonly string IMPORT_FAILED = "Error, failed to imported datas.";
 
         public static string FILL(string field) {
             return "Please fill out `" + field + "` field.";

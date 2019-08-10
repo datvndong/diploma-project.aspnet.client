@@ -20,6 +20,15 @@
         deleteStatus = (bool)TempData[Keywords.DELETE_STATUS];
         deleteClass = deleteStatus ? Keywords.SUCCESS : Keywords.DANGER;
     }
+
+    string importMess = null;
+    bool importStatus = false;
+    string importClass = null;
+    if (TempData[Keywords.IMPORT] != null) {
+        importMess = TempData[Keywords.IMPORT].ToString();
+        importStatus = importMess.Equals(Messages.IMPORT_SUCCESSFUL);
+        importClass = importStatus ? Keywords.SUCCESS : Keywords.DANGER;
+    }
 }
 
 @Styles.Render("~/Content/pagination.css")
@@ -30,19 +39,22 @@
                 <div class="card">
                     <div class="card-body">
                         @if (deleteMess != null) {
-                            <div class="alert-@deleteClass" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">@deleteMess</div>
+                            <div class="alert-@deleteClass" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
+                                @deleteMess
+                            </div>
                         }
-                        @*<th:block th:if="${importMess}">
-                                <div th:if="${importStatus}" th:text="${importMess}" class="alert-success" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
-                                <div th:unless="${importStatus}" th:text="${importMess}" class="alert-danger" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
-                            </th:block>*@
+                        @if (importMess != null) {
+                            <div class="alert-@importClass" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
+                                @importMess
+                            </div>
+                        }
                         <h4 class="card-title">Forms Table</h4>
                         <p class="card-description">
                             Note: <code style="font-size: 100%">click row to show submissions of form</code>
                         </p>
-                        <form action="#" @*th:action="@{/survey/read}" th:object="${importFile}"*@ enctype="multipart/form-data" method="post">
+                        <form action="/Survey/Upload" enctype="multipart/form-data" method="post">
                             <div class="input-group col-xs-12">
-                                <input type="file" class="form-control file-upload-info" @*th:field="*{fileDatas}"*@ />
+                                <input type="file" name="file" class="form-control file-upload-info" />
                                 <span class="input-group-append">
                                     <button class="file-upload-browse btn btn-info" type="submit">
                                         <i class="mdi mdi-upload"></i>Import

@@ -15,7 +15,6 @@ namespace CentralizedDataSystem.Controllers {
         private readonly IUserService _userService;
         private readonly ISubmissionService _submissionService;
         private readonly IGroupService _groupService;
-        //private readonly IReadSurveyService _readSurveyService;
 
         public UserController(IBaseService baseService, IUserService userService, ISubmissionService submissionService, IGroupService groupService) : base(baseService) {
             _userService = userService;
@@ -229,6 +228,7 @@ namespace CentralizedDataSystem.Controllers {
                 if (file.ContentLength > 0) {
                     string fileName = Path.GetFileName(file.FileName);
                     string extension = Path.GetExtension(fileName);
+                    string res = null;
 
                     if (extension.Equals("." + Keywords.CSV)) {
                         string path = Path.Combine(Server.MapPath("~/UploadedFiles"), fileName);
@@ -236,7 +236,7 @@ namespace CentralizedDataSystem.Controllers {
 
                         List<string> groups = _userService.GetListUsersFromFile(path);
                         foreach (string group in groups) {
-                            string res = await _userService.InsertUser(token, group);
+                            res = await _userService.InsertUser(token, group);
                             if (JObject.Parse(res).Count == 0) {
                                 TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
                                 return RedirectToAction(Keywords.INDEX, new { idGroup = Keywords.ROOT_GROUP, page = 1 });

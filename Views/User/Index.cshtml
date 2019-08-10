@@ -21,13 +21,13 @@
     string idGroup = ViewBag.IdGroup;
     string keyword = ViewBag.Keyword;
 
-    string import = null;
-    string alertMessClasss = "alert-danger";
+    string importMess = null;
+    bool importStatus = false;
+    string importClass = null;
     if (TempData[Keywords.IMPORT] != null) {
-        import = TempData[Keywords.IMPORT].ToString();
-        if (import.Equals(Messages.IMPORT_SUCCESSFUL)) {
-            alertMessClasss = "alert-success";
-        }
+        importMess = TempData[Keywords.IMPORT].ToString();
+        importStatus = importMess.Equals(Messages.IMPORT_SUCCESSFUL);
+        importClass = importStatus ? Keywords.SUCCESS : Keywords.DANGER;
     }
 }
 
@@ -39,9 +39,9 @@
                 <div class="card">
                     <div class="card-body">
                         <div id="result-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
-                        @if (import != null) {
-                            <div class="@alertMessClasss" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
-                                @import
+                        @if (importMess != null) {
+                            <div class="alert-@importClass" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
+                                @importMess
                             </div>
                         }
                         <h4 class="card-title">Users Table</h4>

@@ -17,13 +17,13 @@
         root = (Group)ViewBag.Root;
     }
 
-    string import = null;
-    string alertMessClasss = "alert-danger";
+    string importMess = null;
+    bool importStatus = false;
+    string importClass = null;
     if (TempData[Keywords.IMPORT] != null) {
-        import = TempData[Keywords.IMPORT].ToString();
-        if (import.Equals(Messages.IMPORT_SUCCESSFUL)) {
-            alertMessClasss = "alert-success";
-        }
+        importMess = TempData[Keywords.IMPORT].ToString();
+        importStatus = importMess.Equals(Messages.IMPORT_SUCCESSFUL);
+        importClass = importStatus ? Keywords.SUCCESS : Keywords.DANGER;
     }
 }
 
@@ -34,9 +34,9 @@
             <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                     <div class="card-body">
-                        @if (import != null) {
-                            <div class="@alertMessClasss" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
-                                @import
+                        @if (importMess != null) {
+                            <div class="alert-@importClass" style="padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px">
+                                @importMess
                             </div>
                         }
                         <h4 class="card-title">Groups Table</h4>

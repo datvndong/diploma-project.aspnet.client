@@ -13,7 +13,6 @@ using System.Web.Mvc;
 namespace CentralizedDataSystem.Controllers {
     public class GroupController : BaseController {
         private readonly IGroupService _groupService;
-        //private readonly IReadSurveyService _readSurveyService;
 
         public GroupController(IBaseService baseService, IGroupService groupService) : base(baseService) {
             _groupService = groupService;
@@ -133,6 +132,7 @@ namespace CentralizedDataSystem.Controllers {
                 if (file.ContentLength > 0) {
                     string fileName = Path.GetFileName(file.FileName);
                     string extension = Path.GetExtension(fileName);
+                    string res = null;
 
                     if (extension.Equals("." + Keywords.CSV)) {
                         string path = Path.Combine(Server.MapPath("~/UploadedFiles"), fileName);
@@ -140,7 +140,7 @@ namespace CentralizedDataSystem.Controllers {
 
                         List<string> groups = _groupService.GetListGroupsFromFile(path);
                         foreach (string group in groups) {
-                            string res = await _groupService.InsertGroup(token, group);
+                            res = await _groupService.InsertGroup(token, group);
                             if (JObject.Parse(res).Count == 0) {
                                 TempData[Keywords.IMPORT] = Messages.IMPORT_FAILED;
                                 return RedirectToAction(Keywords.INDEX, new { idParent = Keywords.ROOT_GROUP, page = 1 });

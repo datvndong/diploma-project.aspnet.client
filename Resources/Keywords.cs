@@ -16,6 +16,7 @@
         public static readonly string MEDIA_TYPE_CSV = "application/csv";
         public static readonly string JSON = "json";
         public static readonly string CSV = "csv";
+        public static readonly string XLSX = "xlsx";
 
         public static readonly string TAGS = "tags";
         public static readonly string TITLE = "title";
@@ -58,6 +59,9 @@
         public static readonly string AMOUNT = "amount";
         public static readonly string CREATED = "created";
         public static readonly string MODIFIED = "modified";
+        public static readonly string NAME_SURVEY = "nameSurvey";
+        public static readonly string IMPORTER = "importer";
+        public static readonly string CREATED_AT = "createdAt";
 
         // Html components
         public static readonly string CHECKBOX = "checkbox";

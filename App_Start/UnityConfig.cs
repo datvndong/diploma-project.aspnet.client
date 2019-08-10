@@ -30,6 +30,7 @@ namespace CentralizedDataSystem {
             container.RegisterType<ISendEmailService, SendEmailService>();
             container.RegisterType<IStatisticsService, StatisticsService>();
             container.RegisterType<ISubmissionService, SubmissionService>();
+            container.RegisterType<ISurveyService, SurveyService>();
             container.RegisterType<IUserService, UserService>();
             container.RegisterType<IWeatherService, WeatherService>();
 

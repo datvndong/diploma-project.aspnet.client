@@ -24,7 +24,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.GROUP) + "?select=data&data.idGroup=" + idGroup;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return string.Empty;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return string.Empty;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JArray jArray = JArray.Parse(content);
@@ -39,7 +41,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.GROUP) + "/" + id;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -49,7 +53,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.GROUP) + "?select=data&" + condition;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return null;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return null;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JArray jArray = JArray.Parse(content);
@@ -77,7 +83,9 @@ namespace CentralizedDataSystem.Services.Implements {
             apiURI += "&sort=-create&select=data&data.status=" + Configs.ACTIVE_STATUS + "&data.idParent=" + idParent;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return null;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return null;
+            }
 
             List<Group> groups = new List<Group>();
 
@@ -103,7 +111,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + "&select=_id&data.status=" + Configs.ACTIVE_STATUS + "&data.idParent=" + idParent;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return 0;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return 0;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JArray jArray = JArray.Parse(content);
@@ -116,7 +126,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + "&sort=-create&select=data&data.status=" + Configs.ACTIVE_STATUS + "&data.idParent=" + idParent;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "[]";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "[]";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

@@ -23,7 +23,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.USER.ToLower()) + "/" + id;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -49,7 +51,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(path) + "/" + user.Id;
 
             HttpResponseMessage response = await _httpUtil.PutAsync(user.Token, apiURI, JsonConvert.SerializeObject(data));
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -60,7 +64,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + idGroup + "&select=_id";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return 0;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return 0;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return JArray.Parse(content).Count;
@@ -77,7 +83,9 @@ namespace CentralizedDataSystem.Services.Implements {
             apiURI += "&data.idGroup=" + idGroup;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "[]";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "[]";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -88,7 +96,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + keyword + "/&select=_id";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return 0;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return 0;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return JArray.Parse(content).Count;
@@ -99,7 +109,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + "&skip=" + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE + "&data.name__regex=/" + keyword + "/";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "[]";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -162,7 +174,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.USER.ToLower()) + "?limit=" + Configs.LIMIT_QUERY + "&select=data";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "[]";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "[]";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

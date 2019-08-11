@@ -14,7 +14,9 @@ namespace CentralizedDataSystem.Services.Implements {
 
         public async Task<string> GetWeather(string owmAPIKey, string idCity) {
             HttpResponseMessage response = await _httpUtil.GetAsync(APIs.GetWeather(owmAPIKey, idCity));
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

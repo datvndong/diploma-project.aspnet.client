@@ -28,7 +28,9 @@ namespace CentralizedDataSystem.Services.Implements {
 
         public async Task<bool> Logout() {
             HttpResponseMessage response = await _httpUtil.GetAsync(APIs.LOGOUT_URL);
-            if (response == null) return false;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return false;
+            }
 
             return true;
         }

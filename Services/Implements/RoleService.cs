@@ -19,7 +19,9 @@ namespace CentralizedDataSystem.Services.Implements {
             List<Role> list = new List<Role>();
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, APIs.ROLE_URL);
-            if (response == null) return list;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return list;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JArray jArray = JArray.Parse(content);
@@ -40,7 +42,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.ROLE_URL + "?_id=" + _id;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return null;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return null;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JObject jObject = JObject.Parse(content);

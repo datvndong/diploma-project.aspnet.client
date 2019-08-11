@@ -18,7 +18,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "[]";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "[]";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -28,7 +30,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetListSubmissionsURL(path) + "?limit=" + Configs.LIMIT_QUERY + "&select=_id";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return 0;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return 0;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JArray jArray = JArray.Parse(content);
@@ -43,7 +47,9 @@ namespace CentralizedDataSystem.Services.Implements {
             }
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "[]";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "[]";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

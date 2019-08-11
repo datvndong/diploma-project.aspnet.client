@@ -27,7 +27,9 @@ namespace CentralizedDataSystem.Services.Implements {
                 + "&skip=" + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE + "&select=name,title,path,tags";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return list;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return list;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             JArray jArray = JArray.Parse(content);
@@ -63,7 +65,9 @@ namespace CentralizedDataSystem.Services.Implements {
             string apiURI = APIs.GetFormByAlias(path);
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -73,7 +77,7 @@ namespace CentralizedDataSystem.Services.Implements {
             HttpResponseMessage response = null;
             string content = null;
 
-            if (path.Equals("")) {
+            if (string.Empty.Equals(path)) {
                 // Create
                 response = await _httpUtil.PostAsync(token, APIs.FORM_URL, formJSON);
             } else {
@@ -81,7 +85,9 @@ namespace CentralizedDataSystem.Services.Implements {
                 response = await _httpUtil.PutAsync(token, APIs.ModifiedForm(path), formJSON);
             }
 
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             content = await response.Content.ReadAsStringAsync();
             return content;
@@ -91,13 +97,15 @@ namespace CentralizedDataSystem.Services.Implements {
             HttpResponseMessage response = await _httpUtil.DeleteAsync(token, APIs.ModifiedForm(path));
             if (response == null) return false;
 
-            return response.StatusCode == HttpStatusCode.OK;
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<string> FindFormWithNoToken(string path) {
             // Use to get form with Anonymous assign
             HttpResponseMessage response = await _httpUtil.GetAsync(APIs.GetFormByAlias(path));
-            if (response == null) return "{}";
+            if (response == null || !response.IsSuccessStatusCode) {
+                return "{}";
+            }
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -110,7 +118,9 @@ namespace CentralizedDataSystem.Services.Implements {
                     + "&select=title,path,components";
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return list;
+            if (response == null || !response.IsSuccessStatusCode) {
+                return list;
+            }
 
             string content = await response.Content.ReadAsStringAsync();
 
@@ -119,7 +129,7 @@ namespace CentralizedDataSystem.Services.Implements {
                 JArray components = (JArray)jObject.GetValue(Keywords.COMPONENTS);
                 foreach (JObject compObj in components) {
                     string type = compObj.GetValue(Keywords.TYPE).ToString();
-                    if (type.Equals(Keywords.CHECKBOX) || type.Equals(Keywords.SELECTBOXES) 
+                    if (type.Equals(Keywords.CHECKBOX) || type.Equals(Keywords.SELECTBOXES)
                         || type.Equals(Keywords.SELECT) || type.Equals(Keywords.RADIO)) {
                         string title = jObject.GetValue(Keywords.TITLE).ToString();
                         string path = jObject.GetValue(Keywords.PATH).ToString();

@@ -27,6 +27,7 @@
 </head>
 <body>
     <div id="result-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
+    <div id="send-email-message" style="display: none; padding: 10px; font-size: 15px; border-radius: 4px; margin-bottom: 10px"></div>
 
     <form>
         <div class="form-group">
@@ -145,6 +146,7 @@
         const resultMess = $('#result-message');
         const nextBtn = $('#nextBtn');
         const previousBtn = $('#previousBtn');
+        const emailMessage = $('#send-email-message');
 
         const defaultAssignValue = "@Keywords.AUTHENTICATED";
 
@@ -310,6 +312,8 @@
                 cancelBtn.attr('disabled', 'disabled');
                 resultMess.hide();
                 resultMess.removeClass();
+                emailMessage.hide();
+                emailMessage.removeClass();
 
                 $.ajax({
                     url: `${serverURL}/Form/Modified`,
@@ -323,6 +327,14 @@
                         if (response.success) {
                             resultMess.addClass('alert-success');
                             resultMess.html('Successfully ' + (isCreate ? 'created' : 'modified') + ' form!');
+                            
+                            if (response.sendEmail == "@Messages.SEND_MAIL_SUCCESSFUL") {
+                                emailMessage.addClass('alert-success');
+                                emailMessage.html(response.sendEmail);
+                            } else {
+                                emailMessage.addClass('alert-warning');
+                                emailMessage.html(`Failed to send email to ${response.sendEmail}`);
+                            }
                         } else {
                             resultMess.addClass('alert-danger');
                             resultMess.html(response.responseText);
@@ -334,6 +346,7 @@
                     }
                 });
                 resultMess.show();
+                emailMessage.show();
             } else {
                 form.reportValidity();
             }

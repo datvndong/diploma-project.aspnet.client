@@ -14,12 +14,14 @@ namespace CentralizedDataSystem.Controllers {
         private readonly IFormControlService _formControlService;
         private readonly IRoleService _roleService;
         private readonly IGroupService _groupService;
+        private readonly ISendEmailService _sendEmailService;
 
-        public FormController(IBaseService baseService, IFormService formService, IFormControlService formControlService, IRoleService roleService, IGroupService groupService) : base(baseService) {
+        public FormController(IBaseService baseService, IFormService formService, IFormControlService formControlService, IRoleService roleService, IGroupService groupService, ISendEmailService sendEmailService) : base(baseService) {
             _formService = formService;
             _formControlService = formControlService;
             _roleService = roleService;
             _groupService = groupService;
+            _sendEmailService = sendEmailService;
         }
 
         [HttpGet]
@@ -200,16 +202,20 @@ namespace CentralizedDataSystem.Controllers {
             string expired = expiredDate + " " + jObject.GetValue(Keywords.EXPIRED_TIME).ToString();
 
             // Send to form.io server and save to database
-            string res = await _formService.BuildForm(token, formJSON, isCreate ? "" : oldPath);
+            string res = await _formService.BuildForm(token, formJSON, isCreate ? string.Empty : oldPath);
 
+            string sendResult = string.Empty;
             if (isCreate) {
                 bool isInserted = _formControlService.Insert(new FormControl(pathForm, email, assign, start, expired));
                 if (!isInserted) {
                     return Json(new { success = false, responseText = Messages.DATABASE_ERROR }, JsonRequestBehavior.AllowGet);
                 }
 
-                // Handle this - send email - took a long time
-                //                sendEmailService.SendEmail("vandatnguyen1896@gmail.com", jsonObject.GetValue(Keywords.TITLE).ToString());
+                // Send email
+                sendResult = await _sendEmailService.SendEmail(token, assign, jObject.GetValue(Keywords.TITLE).ToString());
+                if (string.Empty.Equals(sendResult)) {
+                    sendResult = Messages.SEND_MAIL_SUCCESSFUL;
+                }
             } else {
                 long rowAffected = await _formControlService.Update(new FormControl(pathForm, email, assign, start, expired), oldPath);
                 if (rowAffected < 1) {
@@ -217,7 +223,7 @@ namespace CentralizedDataSystem.Controllers {
                 }
             }
 
-            return Json(new { success = true, responseText = res }, JsonRequestBehavior.AllowGet);
+            return Json(new { success = true, responseText = res, sendEmail = sendResult }, JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet]
@@ -232,14 +238,12 @@ namespace CentralizedDataSystem.Controllers {
 
             bool isDeleteFormControlSuccess = await _formControlService.DeleteByPathForm(path);
             if (!isDeleteFormControlSuccess) {
-                TempData[Keywords.DELETE] = Messages.DELETE(Keywords.FORM.ToLower(), isDeleteFormControlSuccess);
-                TempData[Keywords.DELETE_STATUS] = isDeleteFormControlSuccess;
+                TempData[Keywords.DELETE] = Messages.DELETE_FAILED;
                 return RedirectToAction(Keywords.INDEX, Keywords.FORM, new { page = 1 });
             }
 
             bool isDeleteFormSuccess = await _formService.DeleteForm(token, path);
-            TempData[Keywords.DELETE] = Messages.DELETE(Keywords.FORM.ToLower(), isDeleteFormSuccess);
-            TempData[Keywords.DELETE_STATUS] = isDeleteFormSuccess;
+            TempData[Keywords.DELETE] = isDeleteFormSuccess ? Messages.DELETE_SUCCESSFUL : Messages.DELETE_FAILED;
 
             return RedirectToAction(Keywords.INDEX, Keywords.FORM, new { page = 1 });
         }

@@ -101,17 +101,17 @@ namespace CentralizedDataSystem.Controllers {
             string groups = null;
 
             if (isNext) {
-                groups = await _groupService.FindGroupsByIdParentWhenCallAjax(token, idGroup);
+                groups = await _groupService.FindAllGroupsByIdParent(token, idGroup);
             } else {
                 Group currentGroup = await _groupService.FindGroupParent(token, "data.idGroup=" + idGroup);
                 Group parentGroup = await _groupService.FindGroupParent(token, "data.idGroup=" + currentGroup.IdParent);
                 if (parentGroup == null) {
                     return Json(new { success = true, responseText = "[]" }, JsonRequestBehavior.AllowGet);
                 }
-                groups = await _groupService.FindGroupsByIdParentWhenCallAjax(token, parentGroup.IdParent);
+                groups = await _groupService.FindAllGroupsByIdParent(token, parentGroup.IdParent);
             }
 
-            if (groups == null) {
+            if (JArray.Parse(groups).Count == 0) {
                 return Json(new { success = false, responseText = Messages.COULD_NOT_CONNECT_API_SERVER }, JsonRequestBehavior.AllowGet);
             }
 

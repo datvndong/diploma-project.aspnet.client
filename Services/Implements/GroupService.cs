@@ -68,11 +68,11 @@ namespace CentralizedDataSystem.Services.Implements {
 
         public async Task<List<Group>> FindListChildGroupByIdParentWithPage(string token, string idParent, string nameParent, int page) {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.GROUP);
-            if (page > 0) {
-                apiURI += "?limit=" + Configs.NUMBER_ROWS_PER_PAGE + "&skip=" + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE;
-            } else {
+            if (page == 0) {
                 // If page = 0 => get full data
                 apiURI += "?limit=" + Configs.LIMIT_QUERY;
+            } else {
+                apiURI += "?limit=" + Configs.NUMBER_ROWS_PER_PAGE + "&skip=" + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE;
             }
             apiURI += "&sort=-create&select=data&data.status=" + Configs.ACTIVE_STATUS + "&data.idParent=" + idParent;
 
@@ -111,12 +111,12 @@ namespace CentralizedDataSystem.Services.Implements {
             return jArray.Count;
         }
 
-        public async Task<string> FindGroupsByIdParentWhenCallAjax(string token, string idParent) {
+        public async Task<string> FindAllGroupsByIdParent(string token, string idParent) {
             string apiURI = APIs.GetListSubmissionsURL(Keywords.GROUP) + "?limit=" + Configs.LIMIT_QUERY
                     + "&sort=-create&select=data&data.status=" + Configs.ACTIVE_STATUS + "&data.idParent=" + idParent;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return null;
+            if (response == null) return "[]";
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

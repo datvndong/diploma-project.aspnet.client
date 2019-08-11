@@ -12,5 +12,6 @@ namespace CentralizedDataSystem.Services.Interfaces {
         Task<string> FindUsersByPageAndName(string token, string keyword, int page);
         List<string> GetListUsersFromFile(string pathFile);
         Task<string> InsertUser(string token, string data);
+        Task<string> FindAllUsers(string token);
     }
 }

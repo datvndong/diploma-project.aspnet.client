@@ -1,5 +1,7 @@
-﻿namespace CentralizedDataSystem.Services.Interfaces {
+﻿using System.Threading.Tasks;
+
+namespace CentralizedDataSystem.Services.Interfaces {
     public interface ISendEmailService {
-        void SendEmail(string email, string nameForm, string content);
+        Task<string> SendEmail(string token, string assign, string nameForm);
     }
 }

@@ -15,9 +15,9 @@
     string deleteMess = null;
     bool deleteStatus = false;
     string deleteClass = null;
-    if (TempData[Keywords.DELETE] != null && TempData[Keywords.DELETE_STATUS] != null) {
+    if (TempData[Keywords.DELETE] != null) {
         deleteMess = TempData[Keywords.DELETE].ToString();
-        deleteStatus = (bool)TempData[Keywords.DELETE_STATUS];
+        deleteStatus = deleteMess.Equals(Messages.DELETE_SUCCESSFUL);
         deleteClass = deleteStatus ? Keywords.SUCCESS : Keywords.DANGER;
     }
 

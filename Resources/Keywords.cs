@@ -74,9 +74,7 @@
         public static readonly string AUTHENTICATED = "5ce8b61ea347f14bc809c814";
         public static readonly string GROUP = "group";
         public static readonly string DELETE = "delete";
-        public static readonly string DELETE_STATUS = "deleteStatus";
         public static readonly string IMPORT = "import";
-        public static readonly string IMPORT_STATUS = "importStatus";
         public static readonly string SUCCESS = "success";
         public static readonly string PRIMARY = "primary";
         public static readonly string WARNING = "warning";

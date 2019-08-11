@@ -48,7 +48,7 @@ namespace CentralizedDataSystem.Services.Implements {
 
             string apiURI = APIs.GetListSubmissionsURL(path) + "/" + user.Id;
 
-            HttpResponseMessage response = await _httpUtil.PutAsync(user.Token ,apiURI, data.ToString());
+            HttpResponseMessage response = await _httpUtil.PutAsync(user.Token, apiURI, JsonConvert.SerializeObject(data));
             if (response == null) return "{}";
 
             string content = await response.Content.ReadAsStringAsync();
@@ -67,11 +67,17 @@ namespace CentralizedDataSystem.Services.Implements {
         }
 
         public async Task<string> FindUsersByPageAndIdGroup(string token, string idGroup, int page) {
-            string apiURI = APIs.GetListSubmissionsURL(Keywords.USER.ToLower()) + "?select=data&limit=" + Configs.NUMBER_ROWS_PER_PAGE
-                    + "&skip=" + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE + "&data.idGroup=" + idGroup;
+            string apiURI = APIs.GetListSubmissionsURL(Keywords.USER.ToLower()) + "?select=data";
+            if (page == 0) {
+                // If page = 0 => get full data
+                apiURI += "&limit=" + Configs.LIMIT_QUERY;
+            } else {
+                apiURI += "&limit=" + Configs.NUMBER_ROWS_PER_PAGE + "&skip=" + (page - 1) * Configs.NUMBER_ROWS_PER_PAGE;
+            }
+            apiURI += "&data.idGroup=" + idGroup;
 
             HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
-            if (response == null) return "{}";
+            if (response == null) return "[]";
 
             string content = await response.Content.ReadAsStringAsync();
             return content;
@@ -145,6 +151,18 @@ namespace CentralizedDataSystem.Services.Implements {
             if (response == null || response.StatusCode != HttpStatusCode.Created) {
                 return "{}";
             }
+
+            string content = await response.Content.ReadAsStringAsync();
+            return content;
+        }
+
+        public async Task<string> FindAllUsers(string token) {
+            List<User> users = new List<User>();
+
+            string apiURI = APIs.GetListSubmissionsURL(Keywords.USER.ToLower()) + "?limit=" + Configs.LIMIT_QUERY + "&select=data";
+
+            HttpResponseMessage response = await _httpUtil.GetAsync(token, apiURI);
+            if (response == null) return "[]";
 
             string content = await response.Content.ReadAsStringAsync();
             return content;

@@ -74,12 +74,14 @@ namespace CentralizedDataSystem.Controllers {
             JArray jArray = JArray.Parse(userResByPage);
             JObject dataObject = null;
             foreach (JObject jsonObject in jArray) {
-                string id = jsonObject.GetValue(Keywords.ID).ToString();
                 dataObject = (JObject)jsonObject.GetValue(Keywords.DATA);
 
                 if ((int)dataObject.GetValue(Keywords.STATUS) == Configs.DEACTIVE_STATUS) {
                     continue;
                 }
+
+                string id = jsonObject.GetValue(Keywords.ID).ToString();
+                string email = dataObject.GetValue(Keywords.EMAIL).ToString();
 
                 string phoneNumber = string.Empty;
                 if (dataObject.ContainsKey(Keywords.PHONE)) {
@@ -96,7 +98,7 @@ namespace CentralizedDataSystem.Controllers {
                     groupName = await _groupService.FindGroupFieldByIdGroup(token, idGroup, Keywords.NAME);
                 }
 
-                users.Add(new User(id, dataObject.GetValue(Keywords.EMAIL).ToString(), dataObject.GetValue(Keywords.NAME).ToString(),
+                users.Add(new User(id, email, dataObject.GetValue(Keywords.NAME).ToString(),
                     groupName, dataObject.GetValue(Keywords.GENDER).ToString(), phoneNumber, address));
             }
 

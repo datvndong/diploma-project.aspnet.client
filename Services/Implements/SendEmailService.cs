@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Hosting;
 
 namespace CentralizedDataSystem.Services.Implements {
@@ -96,9 +97,11 @@ namespace CentralizedDataSystem.Services.Implements {
             List<string> errorMails = new List<string>();
             List<User> users = null;
             string subject = Messages.MAIL_SUBJECT(nameForm);
+            string domainName = HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Authority);
 
             string content = System.IO.File.ReadAllText(HostingEnvironment.MapPath(ViewName.EMAIL_TEMPLATE));
             content = content.Replace("{{title}}", Messages.MAIL_TITLE);
+            content = content.Replace("{{link}}", domainName);
 
             if (assign.Equals(Keywords.AUTHENTICATED)) {
                 string res = await _userService.FindAllUsers(token);

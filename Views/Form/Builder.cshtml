@@ -245,16 +245,8 @@
             }
         }
 
-        title.keyup(function () {
-            const titleValue = title.val();
-            builder.form.title = titleValue
-
-            const nameValue = titleValue.toLowerCase().split(' ')
-                .map((s) => s.charAt(0).toUpperCase() + s.substring(1)).join('')
-                .replace(/[^a-zA-Z0-9]/g, "");
-
-            builder.form.name = nameValue;
-            name.val(nameValue);
+        title.change(function () {
+            builder.form.title = title.val();
         });
 
         name.change(function () {
@@ -310,8 +302,12 @@
             if (form.checkValidity()) {
                 saveBtn.attr('disabled', 'disabled');
                 cancelBtn.attr('disabled', 'disabled');
+
+                resultMess.html('');
                 resultMess.hide();
                 resultMess.removeClass();
+
+                emailMessage.html('');
                 emailMessage.hide();
                 emailMessage.removeClass();
 

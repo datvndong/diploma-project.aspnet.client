@@ -269,6 +269,7 @@
     <Compile Include="Startup.cs" />
     <Compile Include="Utils\CalculateUtil.cs" />
     <Compile Include="Utils\ConfigUtil.cs" />
+    <Compile Include="Utils\EmailUtil.cs" />
     <Compile Include="Utils\EncDecUtil.cs" />
     <Compile Include="Utils\Implements\HttpUtil.cs" />
     <Compile Include="Utils\Interfaces\IHttpUtil.cs" />
